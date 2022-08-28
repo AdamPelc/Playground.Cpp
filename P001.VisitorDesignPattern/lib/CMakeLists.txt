@@ -6,3 +6,4 @@ target_include_directories(${PROJECT_NAME}.Lib
 )
 
 add_subdirectory(Animal)
+add_subdirectory(Serialize)
