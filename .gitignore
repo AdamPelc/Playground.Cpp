@@ -33,3 +33,6 @@
 
 # Idea folders and files
 .idea
+
+# Generated files and folders
+out
