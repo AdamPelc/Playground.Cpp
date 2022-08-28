@@ -10,3 +10,8 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_NAME}.Lib
 )
+
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        -std=c++20
+)
