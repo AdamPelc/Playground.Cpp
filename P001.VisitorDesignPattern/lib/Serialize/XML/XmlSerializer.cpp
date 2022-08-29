@@ -4,7 +4,7 @@
 #include "Animal/Dog/Dog.hpp"
 #include "Animal/Parrot/Parrot.hpp"
 
-std::string XmlSerializer::SerializeCat(const Cat& cat) const {
+std::string XmlSerializer::Serialize(const Cat& cat) const {
     using namespace std::string_literals;
 
     std::string response;
@@ -17,7 +17,7 @@ std::string XmlSerializer::SerializeCat(const Cat& cat) const {
     return response;
 }
 
-std::string XmlSerializer::SerializeDog(const Dog& dog) const {
+std::string XmlSerializer::Serialize(const Dog& dog) const {
     using namespace std::string_literals;
 
     std::string response;
@@ -30,7 +30,7 @@ std::string XmlSerializer::SerializeDog(const Dog& dog) const {
     return response;
 }
 
-std::string XmlSerializer::SerializeParrot( const Parrot& parrot ) const {
+std::string XmlSerializer::Serialize( const Parrot& parrot ) const {
     using namespace std::string_literals;
 
     std::string response;

@@ -4,7 +4,7 @@
 #include "Animal/Dog/Dog.hpp"
 #include "Animal/Parrot/Parrot.hpp"
 
-std::string JsonSerializer::SerializeCat( const Cat& cat ) const {
+std::string JsonSerializer::Serialize( const Cat& cat ) const {
     using namespace std::string_literals;
 
     std::string response;
@@ -17,7 +17,7 @@ std::string JsonSerializer::SerializeCat( const Cat& cat ) const {
     return response;
 }
 
-std::string JsonSerializer::SerializeDog( const Dog& dog ) const {
+std::string JsonSerializer::Serialize( const Dog& dog ) const {
     using namespace std::string_literals;
 
     std::string response;
@@ -30,7 +30,7 @@ std::string JsonSerializer::SerializeDog( const Dog& dog ) const {
     return response;
 }
 
-std::string JsonSerializer::SerializeParrot( const Parrot& parrot ) const {
+std::string JsonSerializer::Serialize( const Parrot& parrot ) const {
     std::string response;
     response += "{\n";
     response += "\t\"species\": \"Parrot\",\n";

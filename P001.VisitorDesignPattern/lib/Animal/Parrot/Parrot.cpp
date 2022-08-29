@@ -11,5 +11,5 @@ std::size_t Parrot::GetAge() const {
 }
 
 std::string Parrot::Serialize( const Serializer& serializer ) {
-    return serializer.SerializeParrot(*this);
+    return serializer.Serialize( *this );
 }
