@@ -10,6 +10,6 @@ std::size_t Cat::GetAge() const {
     return age;
 }
 
-std::string Cat::Serialize(Serializer& serializer) {
+std::string Cat::Serialize(const Serializer& serializer) {
     return serializer.SerializeCat(*this);
 }

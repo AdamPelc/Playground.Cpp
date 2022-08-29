@@ -10,6 +10,6 @@ std::size_t Dog::GetAge() const {
     return age;
 }
 
-std::string Dog::Serialize(Serializer& serializer) {
+std::string Dog::Serialize(const Serializer& serializer) {
     return serializer.SerializeDog(*this);
 }
