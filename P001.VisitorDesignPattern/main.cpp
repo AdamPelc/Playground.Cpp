@@ -5,26 +5,29 @@
 #include "Serialize/XML/XmlSerializer.hpp"
 
 #include <iostream>
+#include <vector>
+#include <memory>
 
 int main() {
     std::cout << "Hello World! Adam! \n";
 
-    // Create animals
-    Cat cat("Toffee", 4);
-    Dog dog("Harry", 8);
-    Parrot parrot("Arrr", 99);
+    // Create serializable animals
+    std::vector<std::unique_ptr<Serializable>> serializable_animals;
+    serializable_animals.emplace_back(std::make_unique<Cat>("Toffee", 4));
+    serializable_animals.emplace_back(std::make_unique<Dog>("Harry", 8));
+    serializable_animals.emplace_back(std::make_unique<Parrot>("Arrr", 99));
 
     JsonSerializer jsonSerializer;
-    std::cout << "Serialize animals using JSON:\n";
-    std::cout << cat.Serialize(jsonSerializer) << "\n";
-    std::cout << dog.Serialize(jsonSerializer) << "\n";
-    std::cout << parrot.Serialize(jsonSerializer) << "\n";
+    std::cout << "\nSerialize animals using JSON:\n";
+    for (const auto& animal : serializable_animals) {
+        std::cout << animal->Serialize(jsonSerializer) << "\n";
+    }
 
     XmlSerializer xmlSerializer;
-    std::cout << "Serialize animal using XML:\n";
-    std::cout << cat.Serialize(xmlSerializer) << "\n";
-    std::cout << dog.Serialize(xmlSerializer) << "\n";
-    std::cout << parrot.Serialize(xmlSerializer) << "\n";
+    std::cout << "\nSerialize animal using XML:\n";
+    for (const auto& animal : serializable_animals) {
+        std::cout << animal->Serialize(xmlSerializer) << "\n";
+    }
 
     return 0;
 }
