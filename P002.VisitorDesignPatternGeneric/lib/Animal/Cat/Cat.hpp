@@ -4,22 +4,19 @@
 
 #include "Serialize/Serializable.hpp"
 
-#include <string_view>
 #include <cstdint>
+#include <string_view>
 
-class Cat : public Serializable {
+class Cat : public Serializable<Cat> {
 public:
-    Cat(std::string_view name, std::size_t age);
+    Cat( std::string_view name, std::size_t age );
 
     [[nodiscard]] std::string GetName() const;
     [[nodiscard]] std::size_t GetAge() const;
 
-    [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
 private:
     std::string name;
     std::size_t age;
-
-    friend class Serializer;
 };
 
 

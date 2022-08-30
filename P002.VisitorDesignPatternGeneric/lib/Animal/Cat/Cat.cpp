@@ -1,15 +1,12 @@
 #include "Cat.hpp"
 
-Cat::Cat(std::string_view name, std::size_t age) : name(name), age(age) {}
+Cat::Cat( std::string_view name, std::size_t age ) : name( name ), age( age ) {
+}
 
 std::string Cat::GetName() const {
-    return {name};
+    return { name };
 }
 
 std::size_t Cat::GetAge() const {
     return age;
-}
-
-std::string Cat::Serialize(const Serializer& serializer) const {
-    return serializer.Serialize( *this );
 }

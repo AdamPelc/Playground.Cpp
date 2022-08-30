@@ -7,14 +7,12 @@
 
 #include <string_view>
 
-class Parrot : public Serializable {
+class Parrot : public Serializable<Parrot> {
 public:
-    Parrot(std::string_view name, std::size_t age);
+    Parrot( std::string_view name, std::size_t age );
 
     [[nodiscard]] std::string GetName() const;
     [[nodiscard]] std::size_t GetAge() const;
-
-    [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
 
 private:
     std::string name;

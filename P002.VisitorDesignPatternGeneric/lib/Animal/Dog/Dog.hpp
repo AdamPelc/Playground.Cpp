@@ -4,17 +4,16 @@
 
 #include "Serialize/Serializable.hpp"
 
-#include <string_view>
 #include <cstdint>
+#include <string_view>
 
-class Dog : public Serializable {
+class Dog : public Serializable<Dog> {
 public:
-    Dog(std::string_view name, std::size_t age);
+    Dog( std::string_view name, std::size_t age );
 
     [[nodiscard]] std::string GetName() const;
     [[nodiscard]] std::size_t GetAge() const;
 
-    [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
 private:
     std::string name;
     std::size_t age;
