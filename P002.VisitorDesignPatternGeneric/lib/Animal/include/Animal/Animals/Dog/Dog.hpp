@@ -2,12 +2,13 @@
 #ifndef PLAYGROUND_CPP_DOG_HPP
 #define PLAYGROUND_CPP_DOG_HPP
 
-#include "Serialize/Serializable.hpp"
+#include "Animal/Helper/Visitor/VisitableAnimal.hpp"
 
 #include <cstdint>
 #include <string_view>
+#include <string>
 
-class Dog : public Serializable<Dog> {
+class Dog : public VisitableAnimal<Dog> {
 public:
     Dog( std::string_view name, std::size_t age );
 

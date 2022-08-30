@@ -1,4 +1,4 @@
-#include "Dog.hpp"
+#include "Animal/Animals/Dog/Dog.hpp"
 
 Dog::Dog( std::string_view name, std::size_t age ) : name( name ), age( age ){};
 

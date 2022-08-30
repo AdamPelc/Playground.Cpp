@@ -2,12 +2,19 @@
 #ifndef PLAYGROUND_CPP_JSONSERIALIZER_HPP
 #define PLAYGROUND_CPP_JSONSERIALIZER_HPP
 
-#include "Serialize/Serializer.hpp"
+#include "Serialize/Serializer/Serializer.hpp"
+
+#include <string>
+
+class Cat;
+class Dog;
+class Parrot;
 
 class JsonSerializer : public Serializer {
-    [[nodiscard]] std::string Serialize( const Cat& cat ) const override;
-    [[nodiscard]] std::string Serialize( const Dog& dog ) const override;
-    [[nodiscard]] std::string Serialize( const Parrot& parrot ) const override;
+public:
+    void Visit( const Cat& cat ) override;
+    void Visit( const Dog& dog ) override;
+    void Visit( const Parrot& parrot ) override;
 };
 
 #endif// PLAYGROUND_CPP_JSONSERIALIZER_HPP

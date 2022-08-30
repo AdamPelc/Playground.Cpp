@@ -1,42 +1,37 @@
 #include "JsonSerializer.hpp"
 
-#include "Animal/Cat/Cat.hpp"
-#include "Animal/Dog/Dog.hpp"
-#include "Animal/Parrot/Parrot.hpp"
+#include "Animal/Animals/Cat/Cat.hpp"
+#include "Animal/Animals/Dog/Dog.hpp"
+#include "Animal/Animals/Parrot/Parrot.hpp"
 
-std::string JsonSerializer::Serialize( const Cat& cat ) const {
+void JsonSerializer::Visit( const Cat& cat ) {
     using namespace std::string_literals;
 
-    std::string response;
-    response += "{\n";
-    response += "\t\"species\": \"Cat\",\n";
-    response += "\t\"name\": " + cat.GetName() + ",\n";
-    response += "\t\"age\": " + std::to_string( cat.GetAge() ) + ",\n";
-    response += "}";
-
-    return response;
+    buffer.clear();
+    buffer += "{\n";
+    buffer += "\t\"species\": \"Cat\",\n";
+    buffer += "\t\"name\": " + cat.GetName() + ",\n";
+    buffer += "\t\"age\": " + std::to_string( cat.GetAge() ) + ",\n";
+    buffer += "}";
 }
 
-std::string JsonSerializer::Serialize( const Dog& dog ) const {
+void JsonSerializer::Visit( const Dog& dog ) {
     using namespace std::string_literals;
 
-    std::string response;
-    response += "{\n";
-    response += "\t\"species\": \"Dog\",\n";
-    response += "\t\"name\": " + dog.GetName() + ",\n";
-    response += "\t\"age\": " + std::to_string( dog.GetAge() ) + ",\n";
-    response += "}";
-
-    return response;
+    buffer.clear();
+    buffer += "{\n";
+    buffer += "\t\"species\": \"Dog\",\n";
+    buffer += "\t\"name\": " + dog.GetName() + ",\n";
+    buffer += "\t\"age\": " + std::to_string( dog.GetAge() ) + ",\n";
+    buffer += "}";
 }
 
-std::string JsonSerializer::Serialize( const Parrot& parrot ) const {
-    std::string response;
-    response += "{\n";
-    response += "\t\"species\": \"Parrot\",\n";
-    response += "\t\"name\": " + parrot.GetName() + ",\n";
-    response += "\t\"age\": " + std::to_string( parrot.GetAge() ) + ",\n";
-    response += "}";
+void JsonSerializer::Visit( const Parrot& parrot ) {
 
-    return response;
+    buffer.clear();
+    buffer += "{\n";
+    buffer += "\t\"species\": \"Parrot\",\n";
+    buffer += "\t\"name\": " + parrot.GetName() + ",\n";
+    buffer += "\t\"age\": " + std::to_string( parrot.GetAge() ) + ",\n";
+    buffer += "}";
 }

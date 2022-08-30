@@ -2,12 +2,13 @@
 #ifndef PLAYGROUND_CPP_CAT_HPP
 #define PLAYGROUND_CPP_CAT_HPP
 
-#include "Serialize/Serializable.hpp"
+#include "Animal/Helper/Visitor/VisitableAnimal.hpp"
 
 #include <cstdint>
 #include <string_view>
+#include <string>
 
-class Cat : public Serializable<Cat> {
+class Cat : public VisitableAnimal<Cat> {
 public:
     Cat( std::string_view name, std::size_t age );
 

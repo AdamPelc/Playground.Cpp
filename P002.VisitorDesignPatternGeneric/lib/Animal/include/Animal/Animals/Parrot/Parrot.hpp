@@ -2,12 +2,12 @@
 #ifndef PLAYGROUND_CPP_PARROT_HPP
 #define PLAYGROUND_CPP_PARROT_HPP
 
-#include "Serialize/Serializable.hpp"
-#include "Serialize/Serializer.hpp"
+#include "Animal/Helper/Visitor/VisitableAnimal.hpp"
 
 #include <string_view>
+#include <string>
 
-class Parrot : public Serializable<Parrot> {
+class Parrot : public VisitableAnimal<Parrot> {
 public:
     Parrot( std::string_view name, std::size_t age );
 

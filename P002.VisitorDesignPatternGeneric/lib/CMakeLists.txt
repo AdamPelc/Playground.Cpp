@@ -11,4 +11,9 @@ target_compile_options(${PROJECT_NAME}.Lib
 )
 
 add_subdirectory(Animal)
+target_link_libraries(${PROJECT_NAME}.Lib
+    PUBLIC
+        P002.Animal
+)
+
 add_subdirectory(Serialize)
