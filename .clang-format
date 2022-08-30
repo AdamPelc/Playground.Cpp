@@ -60,7 +60,7 @@ IndentAccessModifiers: false
 IndentCaseLabels: true
 IndentExternBlock: NoIndent
 IndentGotoLabels: true
-IndentPPDirectives: AfterHash
+IndentPPDirectives: None
 IndentRequires: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
