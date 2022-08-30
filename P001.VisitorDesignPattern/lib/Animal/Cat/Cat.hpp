@@ -11,10 +11,10 @@ class Cat : public Serializable {
 public:
     Cat(std::string_view name, std::size_t age);
 
-    std::string GetName() const;
-    std::size_t GetAge() const;
+    [[nodiscard]] std::string GetName() const;
+    [[nodiscard]] std::size_t GetAge() const;
 
-    std::string Serialize(const Serializer& serializer) const override;
+    [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
 private:
     std::string name;
     std::size_t age;

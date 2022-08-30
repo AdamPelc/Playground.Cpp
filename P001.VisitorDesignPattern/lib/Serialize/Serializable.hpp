@@ -8,7 +8,7 @@
 
 class Serializable {
 public:
-    virtual std::string Serialize(const Serializer& serializer) const = 0;
+    [[nodiscard]] virtual std::string Serialize(const Serializer& serializer) const = 0;
 };
 
 #endif// PLAYGROUND_CPP_SERIALIZABLE_HPP

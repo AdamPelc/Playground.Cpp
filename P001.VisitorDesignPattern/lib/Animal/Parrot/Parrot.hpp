@@ -14,7 +14,7 @@ public:
     [[nodiscard]] std::string GetName() const;
     [[nodiscard]] std::size_t GetAge() const;
 
-    std::string Serialize(const Serializer& serializer) const override;
+    [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
 
 private:
     std::string name;
