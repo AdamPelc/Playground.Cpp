@@ -17,16 +17,16 @@ int main() {
     serializable_animals.emplace_back(std::make_unique<Dog>("Harry", 8));
     serializable_animals.emplace_back(std::make_unique<Parrot>("Arrr", 99));
 
-    JsonSerializer jsonSerializer;
+    std::unique_ptr<Serializer> serializer = std::make_unique<JsonSerializer>();
     std::cout << "\nSerialize animals using JSON:\n";
     for (const auto& animal : serializable_animals) {
-        std::cout << animal->Serialize(jsonSerializer) << "\n";
+        std::cout << animal->Serialize(*serializer) << "\n";
     }
 
-    XmlSerializer xmlSerializer;
+    serializer = std::make_unique<XmlSerializer>();
     std::cout << "\nSerialize animal using XML:\n";
     for (const auto& animal : serializable_animals) {
-        std::cout << animal->Serialize(xmlSerializer) << "\n";
+        std::cout << animal->Serialize(*serializer) << "\n";
     }
 
     return 0;
