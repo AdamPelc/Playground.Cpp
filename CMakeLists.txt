@@ -6,3 +6,4 @@ project(Playground.Cpp)
 ########################################################################################################################
 add_subdirectory(P001.VisitorDesignPattern)
 add_subdirectory(P002.VisitorDesignPatternGeneric)
+add_subdirectory(P003.Spectre)
