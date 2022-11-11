@@ -15,15 +15,11 @@ void access_memory(const void* p) {
                           "r"(*static_cast<const uint8_t*>(p)) : "memory");
 }
 
-/// @brief Gets time.
+/// @brief Gets current time in nanoseconds.
 /// @return Time in nanoseconds.
 auto get_time() {
-//    unsigned int i;
-//    return __rdtscp(&i);
     return duration_cast<nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
 }
-
-
 
 template<typename T>
 double average(const T& a, std::size_t skip_index)
@@ -105,25 +101,6 @@ char spectre_attack(const char* data, std::size_t size, std::size_t evil_index)
     }
     return i2;
 }
-
-//auto get_time_x86() {
-//    unsigned int i;
-//    return __rdtscp(&i);
-//}
-//
-//namespace ex
-//{
-//class not_implemented : public std::exception {
-//public:
-//    char * what() {
-//        return "Not implemented";
-//    }
-//};
-//}
-//
-//constexpr const std::size_t num_val = 256;
-//
-//static TimingElement timing_array[num_val];
 
 auto main() -> int {
     constexpr const size_t size = 4096;
