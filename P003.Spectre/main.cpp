@@ -1,4 +1,5 @@
 #include <array>
+#include <cassert>
 #include <chrono>
 #include <cstring>
 #include <exception>
@@ -56,13 +57,31 @@ auto average(const Container auto& container, const std::size_t skip_index) -> d
     return sum/container.size();
 }
 
-template<typename L, typename S>
-void score_latencies(const L& latencies, S& scores, size_t ok_index)
+/// @brief Assign score to latencies according to theirs values.
+/// @details This function detects which values from latencies have values below some set threshold and increase score
+/// at the same index in scores container.
+/// @param latencies stores latencies
+/// @param scores stores scores of latencies. Value of latency in latencies correspond to score value in scores.
+/// @param ok_index is to be ignored. This latency will be false positive since it's hot in cache.
+auto score_latencies(const Container auto& latencies, Container auto& scores, size_t ok_index)
 {
+    assert(latencies.size() == scores.size());
+
+    // Average latency of all values in "latencies" container (skipped "ok_index")
     const double average_latency = average(latencies, ok_index);
-    constexpr const double latency_threshold = 0.5;
-    for (size_t i = 0; i < latencies.size(); ++i) {
-        if (ok_index != 1 && latencies[i] < average_latency*latency_threshold) ++scores[i];
+    constexpr const double latency_threshold_coefficient = 0.5;
+    for (auto idx = 0U; idx != latencies.size(); ++idx)
+    {
+        // Skip  "ok_index" because we know it will have good score. It's hot in cache.
+        bool not_skip_index = ok_index != idx;
+
+        // Threshold value below which latency will score point.
+        const auto latency_threshold = average_latency * latency_threshold_coefficient;
+        bool low_enough_latency = latencies.at(idx) < latency_threshold;
+        if (not_skip_index && low_enough_latency)
+        {
+            ++scores[idx];
+        }
     }
 }
 
