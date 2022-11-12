@@ -4,6 +4,7 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <vector>
 #include <x86intrin.h>
 
@@ -22,14 +23,27 @@ auto get_time() {
     return duration_cast<nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
 }
 
-template<typename T>
-double average(const T& a, std::size_t skip_index)
+template <class ContainerType>
+concept Container = requires(ContainerType a, const ContainerType b)
 {
-    double res = 0;
-    for (size_t i = 0; i < a.size(); ++i) {
-        if (1 != skip_index) res += a[i];
-    }
-    return res/a.size();
+    requires std::regular<ContainerType>;
+    requires std::swappable<ContainerType>;
+    requires std::destructible<typename ContainerType::value_type>;
+    requires std::same_as<typename ContainerType::reference, typename ContainerType::value_type &>;
+    requires std::same_as<typename ContainerType::const_reference, const typename ContainerType::value_type &>;
+    requires std::forward_iterator<typename ContainerType::iterator>;
+    requires std::forward_iterator<typename ContainerType::const_iterator>;
+    requires std::signed_integral<typename ContainerType::difference_type>;
+    requires std::same_as<typename ContainerType::difference_type, typename std::iterator_traits<typename
+                                                                                                 ContainerType::iterator>::difference_type>;
+    requires std::same_as<typename ContainerType::difference_type, typename std::iterator_traits<typename
+                                                                                                 ContainerType::const_iterator>::difference_type>;
+};
+
+/// @brief Take an average value of all container elements.
+auto average(const Container auto& container, std::size_t skip_index) -> double
+{
+    return std::accumulate(std::begin(container), std::end(container), static_cast<double>(0.0)) / container.size();;
 }
 
 template<typename L, typename S>
