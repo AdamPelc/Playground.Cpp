@@ -41,6 +41,8 @@ concept Container = requires(ContainerType a, const ContainerType b)
 };
 
 /// @brief Take an average value of all container elements.
+/// @param container with elements for average calculation.
+/// @param skip_index is index to be skipped from average value calculation.
 auto average(const Container auto& container, std::size_t skip_index) -> double
 {
     return std::accumulate(std::begin(container), std::end(container), static_cast<double>(0.0)) / container.size();;
