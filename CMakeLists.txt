@@ -12,6 +12,7 @@ find_package(GTest CONFIG REQUIRED)
 # Playgrounds
 ########################################################################################################################
 add_subdirectory(CustomIterator)
+add_subdirectory(InstructionLevelParallelism)
 add_subdirectory(P001.VisitorDesignPattern)
 add_subdirectory(P002.VisitorDesignPatternGeneric)
 add_subdirectory(P003.Spectre)
