@@ -2,7 +2,7 @@ add_executable(01_substring_sort)
 
 target_sources(01_substring_sort
     PRIVATE
-    main.cpp
+        main.cpp
 )
 
 target_link_libraries(01_substring_sort PRIVATE compilation_flags compare)
