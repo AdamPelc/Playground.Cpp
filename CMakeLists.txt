@@ -16,6 +16,7 @@ find_package(GTest CONFIG REQUIRED)
 ########################################################################################################################
 # Playgrounds
 ########################################################################################################################
+add_subdirectory(algorithms)
 add_subdirectory(Book)
 add_subdirectory(CustomIterator)
 add_subdirectory(InstructionLevelParallelism)
