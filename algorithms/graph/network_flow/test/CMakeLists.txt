@@ -1,0 +1,11 @@
+add_executable(network_flow.test)
+target_sources(network_flow.test
+PRIVATE
+    main.test.cpp
+)
+target_link_libraries(network_flow.test
+PRIVATE
+    network_flow
+    gtest
+    gtest_main
+)

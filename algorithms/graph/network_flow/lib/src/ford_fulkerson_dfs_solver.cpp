@@ -1,23 +1,6 @@
-#include <stdexcept>
+#include "ford_fulkerson_dfs_solver.hpp"
+
 #include <limits>
-#include <iostream>
-#include <fmt/format.h>
-#include "maximum_flow.hpp"
-
-edge_t::edge_t(source_node_t from, destination_node_t to, capacity_t capacity) : m_from(from), m_to(to), m_capacity
-      (capacity) {}
-
-source_node_t edge_t::get_source() const {
-    return m_from;
-}
-
-destination_node_t edge_t::get_destination() const {
-    return m_to;
-}
-
-capacity_t edge_t::get_capacity() const {
-    return m_capacity;
-}
 
 void ford_fulkerson_dfs_solver_t::add_edge(edge_t edge) {
     const auto from = edge.get_source();
@@ -33,6 +16,10 @@ void ford_fulkerson_dfs_solver_t::add_edge(edge_t edge) {
 }
 
 std::uint64_t ford_fulkerson_dfs_solver_t::get_max_flow(source_node_t source, destination_node_t sink) {
+    if(source.get() == sink.get()) {
+        return 0;
+    }
+
     m_sink_node = sink;
     int max_flow = 0;
 
@@ -77,15 +64,3 @@ flow_t ford_fulkerson_dfs_solver_t::dfs(source_node_t source, flow_t flow) {
     }
     return flow_t(0);
 }
-
-edge_data_t::edge_data_t(capacity_t capacity) : m_capacity(capacity) {}
-
-capacity_t edge_data_t::get_remaining_capacity() const {
-    return capacity_t(m_capacity.get() - m_flow.get());
-}
-
-void edge_data_t::augment(flow_t flow) {
-    m_flow.get() += flow;
-}
-
-

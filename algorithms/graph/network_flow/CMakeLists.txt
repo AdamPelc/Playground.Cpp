@@ -1,1 +1,2 @@
-add_subdirectory(maximum_flow-Ford_Fulkerson_DFS)
+add_subdirectory(lib)
+add_subdirectory(test)
