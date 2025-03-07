@@ -2,7 +2,6 @@
 
 #include <limits>
 #include <queue>
-#include <stdexcept>
 #include <unordered_set>
 
 void edmonds_karp_solver_t::add_edge( edge_t edge ) {
@@ -41,22 +40,22 @@ flow_t edmonds_karp_solver_t::bfs(source_node_t source, destination_node_t sink)
     queue.emplace(source, max_flow);
 
     while(!queue.empty()) {
-        const auto [node, flow] = queue.front();
+        const auto [ current_source, flow] = queue.front();
         queue.pop();
 
-        if(node == sink) {
+        if( current_source == sink) {
             max_flow = flow;
             break;
         }
 
-        if(visited.find(node) != visited.end()) {
+        if(visited.find( current_source ) != visited.end()) {
             continue;
         }
-        visited.insert(node);
+        visited.insert( current_source );
 
 
-        for(auto& destination : m_graph.at(node)) {
-            auto& edge = m_edges.at({node, destination});
+        for(auto& destination : m_graph.at( current_source )) {
+            auto& edge = m_edges.at({ current_source, destination});
             const auto remaining_capacity = edge.get_remaining_capacity();
             if(remaining_capacity == 0) {
                 continue;
@@ -66,13 +65,32 @@ flow_t edmonds_karp_solver_t::bfs(source_node_t source, destination_node_t sink)
                 continue;
             }
 
-            parents[destination] = node;
+            parents[destination] = current_source;
             const auto min_flow = flow_t(std::min(flow.get(), remaining_capacity.get()));
 
             queue.emplace(destination_node_t(destination), min_flow);
         }
     }
 
+    if(parents.find(sink) == parents.end()) {
+        return flow_t(0);
+    }
 
-    return flow_t();
+    // Update edges capacity
+    auto node = sink;
+    while(node != source) {
+        // Add flow to
+        const auto parent = parents.at(node);
+        auto& edge = m_edges.at({parent, node});
+        edge.augment(max_flow);
+
+        // Add negative flow
+        auto& residual_edge = m_edges.at({source_node_t(node), destination_node_t(parent)});
+        residual_edge.augment(flow_t(-max_flow.get()));
+
+        // Move to the next node
+        node = destination_node_t(parent);
+    }
+
+    return max_flow;
 }
