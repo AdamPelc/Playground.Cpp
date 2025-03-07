@@ -11,20 +11,20 @@ void ford_fulkerson_dfs_solver_t::add_edge(edge_t edge) {
     m_edges.emplace(std::make_pair(from, to), edge.get_capacity());
 
     // Insert information about (to) -> (from) residual connection
-    m_graph[source_node_t(to)].push_back(destination_node_t(from));
+    m_graph[source_node_t(to)].emplace_back(from);
     m_edges.emplace(std::make_pair(source_node_t(to), destination_node_t(from)), capacity_t(0));
 }
 
-std::uint64_t ford_fulkerson_dfs_solver_t::get_max_flow(source_node_t source, destination_node_t sink) {
+flow_t ford_fulkerson_dfs_solver_t::get_max_flow(source_node_t source, destination_node_t sink) {
     if(source.get() == sink.get()) {
-        return 0;
+        return flow_t(0);
     }
 
     m_sink_node = sink;
-    int max_flow = 0;
+    auto max_flow = flow_t(0);
 
-    while(auto current_flow = dfs(source, flow_t(std::numeric_limits<flow_t::value_type_t>::max()))) {
-        max_flow += current_flow;
+    while(auto additional_flow = dfs(source, flow_t(std::numeric_limits<flow_t::value_type_t>::max()))) {
+        max_flow.get() += additional_flow;
         m_visited.clear();
     }
 
