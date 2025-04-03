@@ -1,0 +1,11 @@
+add_executable(disjoint_set.test)
+target_sources(disjoint_set.test
+PRIVATE
+    main.test.cpp
+)
+target_link_libraries(disjoint_set.test
+PRIVATE
+    disjoint_set
+    gtest
+    gtest_main
+)
