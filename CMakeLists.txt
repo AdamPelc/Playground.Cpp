@@ -12,6 +12,7 @@ enable_testing()
 ########################################################################################################################
 find_package(fmt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(benchmark CONFIG REQUIRED)
 
 ########################################################################################################################
 # Playgrounds
@@ -24,3 +25,4 @@ add_subdirectory(LeetCode)
 add_subdirectory(P001.VisitorDesignPattern)
 add_subdirectory(P002.VisitorDesignPatternGeneric)
 add_subdirectory(P003.Spectre)
+add_subdirectory(performance)
