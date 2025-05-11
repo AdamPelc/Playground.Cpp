@@ -1,6 +1,7 @@
 #include "stack_lock_guard.hpp"
 
 #include "mutex/mutex_v1.hpp"
+#include "mutex/mutex_v2.hpp"
 #include "stack_mutex.hpp"
 
 #include <benchmark/benchmark.h>
@@ -22,7 +23,7 @@ static void BM_ReadOnlyFromTheTop(benchmark::State& state)
         benchmark::DoNotOptimize(stack.top());
     }
 
-    state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations() * state.threads());
 }
 
 template<template<class, class> class TStack, class TMutex>
@@ -60,8 +61,10 @@ static void BM_PushAndPop(benchmark::State& state)
  */
 BENCHMARK_TEMPLATE(BM_ReadOnlyFromTheTop, stack_mutex_t, std::shared_mutex)->ThreadRange(1, 64);
 BENCHMARK_TEMPLATE(BM_ReadOnlyFromTheTop, stack_mutex_t, mutex_v1_t)->ThreadRange(1, 64);
+BENCHMARK_TEMPLATE(BM_ReadOnlyFromTheTop, stack_mutex_t, mutex_v2_t)->ThreadRange(1, 64);
 
 BENCHMARK_TEMPLATE(BM_PushAndPop,      stack_mutex_t, std::shared_mutex)  ->ThreadRange(1, 64);
 BENCHMARK_TEMPLATE(BM_PushAndPop,      stack_mutex_t, mutex_v1_t)  ->ThreadRange(1, 64);
+BENCHMARK_TEMPLATE(BM_PushAndPop,      stack_mutex_t, mutex_v2_t)  ->ThreadRange(1, 64);
 
 BENCHMARK_MAIN();
