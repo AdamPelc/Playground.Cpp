@@ -16,18 +16,11 @@ TEST(lock_free_stack_test, push_pop) {
     std::latch latch{number_of_cores};
 
     auto worker = [&stack, &latch]() {
-        std::thread::id tid = std::this_thread::get_id();
-        std::stringstream thread_id_buffer;
-        thread_id_buffer << tid;
-        std::cout << std::format("Worker started: {}\n", thread_id_buffer.str());
         latch.arrive_and_wait();
-
         for (int i = 0; i < 100; ++i) {
             stack.push(10);
             stack.pop();
         }
-
-        std::cout << std::format("Worker finished: {}\n", thread_id_buffer.str());
     };
 
     std::vector<std::jthread> threads;
