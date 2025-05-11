@@ -9,7 +9,7 @@ target_link_libraries(lf_stack
 PRIVATE
     compiler_warnings
     compiler_features
-    thread_sanitizer
+    #thread_sanitizer
 )
 
 add_subdirectory(src)
