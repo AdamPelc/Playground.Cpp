@@ -12,4 +12,9 @@ PRIVATE
     #thread_sanitizer
 )
 
+target_compile_options(lf_stack
+PRIVATE
+    -mcx16
+)
+
 add_subdirectory(src)

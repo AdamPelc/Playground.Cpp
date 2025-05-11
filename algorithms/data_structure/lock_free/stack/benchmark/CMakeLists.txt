@@ -12,4 +12,5 @@ PRIVATE
     benchmark::benchmark
     compiler_features
     compiler_warnings
+    atomic
 )
