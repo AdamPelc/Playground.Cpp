@@ -12,46 +12,24 @@ class queue_mutex_t
 {
 public:
     [[nodiscard]]
-    auto front() const -> std::optional<type_T>;
-
-    [[nodiscard]]
-    auto pop() -> std::optional<type_T>;
-
-    auto push(type_T value) -> void;
-
-    [[nodiscard]]
-    auto empty() const -> bool;
+    auto dequeue() const -> std::optional<type_T>;
+    auto enqueue(type_T value) -> void;
 
 private:
     container_T m_container;
 };
 
 template<typename type_T, typename container_T>
-std::optional<type_T> queue_mutex_t<type_T, container_T>::front() const
+std::optional<type_T> queue_mutex_t<type_T, container_T>::dequeue() const
 {
-    if(empty())
-    {
+    if (m_container.empty()) {
         return {};
     }
-
-    throw std::runtime_error("Not implemented");
+    return m_container.front();
 }
 
 template<typename type_T, typename container_T>
-std::optional<type_T> queue_mutex_t<type_T, container_T>::pop()
-{
-    if(empty())
-    {
-        return {};
-    }
-
-    throw std::runtime_error("Not implemented");
+auto queue_mutex_t<type_T, container_T>::enqueue(type_T value) -> void {
+    m_container.push_back(value);
 }
-
-template<typename type_T, typename container_T>
-void queue_mutex_t<type_T, container_T>::push(type_T value)
-{
-    throw std::runtime_error("Not implemented");
-}
-
 }

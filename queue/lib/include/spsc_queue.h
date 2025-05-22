@@ -7,16 +7,28 @@
 
 #include "impl/queue_mutex.hpp"
 
-template<typename type_T, typename container_T = std::deque<type_T>, typename impl_T = impl::queue_mutex_t<type_T, container_T>>
+template<
+    typename type_T,
+    template<typename, typename> class impl_T = impl::queue_mutex_t,
+    template<typename> class container_T = std::deque>
 class spsc_queue_t {
 public:
-    [[nodiscard]] std::optional<type_T> front() const;
+    [[nodiscard]] auto dequeue() const -> std::optional<type_T>;
+    auto enqueue(type_T value) -> void;
 
 private:
-    impl_T m_impl;
+    impl_T<type_T, container_T<type_T>> m_impl;
 };
 
-template<typename type_T, typename container_T, typename impl_T>
-auto spsc_queue_t<type_T, container_T, impl_T>::front() const -> std::optional<type_T> {
-    return m_impl.front();
+template<
+    typename type_T,
+    template<typename, typename> class impl_T,
+    template<typename> class container_T>
+auto spsc_queue_t<type_T, impl_T, container_T>::dequeue() const -> std::optional<type_T> {
+    return m_impl.dequeue();
+}
+
+template<typename type_T, template <typename, typename> class impl_T, template <typename> class container_T>
+auto spsc_queue_t<type_T, impl_T, container_T>::enqueue(type_T value) -> void {
+    m_impl.enqueue(value);
 }

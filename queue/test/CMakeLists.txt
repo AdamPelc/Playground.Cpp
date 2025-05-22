@@ -5,7 +5,7 @@ add_executable(queue.test)
 target_link_libraries(queue.test
 PRIVATE
     compiler_warnings
-    compiler_features
+    cpp_ver_23
     queue
     GTest::gtest
     GTest::gtest_main

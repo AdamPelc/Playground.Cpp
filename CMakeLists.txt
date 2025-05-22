@@ -14,6 +14,25 @@ find_package(fmt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
 
+#########################################################################################################################
+## Compiler options
+#########################################################################################################################
+# Version C++23
+add_library(cpp_ver_23 INTERFACE)
+target_compile_features(cpp_ver_23
+    INTERFACE
+    cxx_std_23
+)
+# Common compiler warnings
+add_library(compiler_warnings INTERFACE)
+target_compile_options(compiler_warnings
+INTERFACE
+    -Wall
+    -Werror
+    -Wextra
+    -pedantic
+)
+
 ########################################################################################################################
 # Playgrounds
 ########################################################################################################################
