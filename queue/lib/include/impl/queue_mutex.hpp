@@ -12,24 +12,37 @@ class queue_mutex_t
 {
 public:
     [[nodiscard]]
-    auto dequeue() const -> std::optional<type_T>;
+    auto dequeue() -> std::optional<type_T>;
     auto enqueue(type_T value) -> void;
-
+    [[nodiscard]]
+    auto is_empty() const -> bool;
 private:
+    mutable std::shared_mutex m_mutex;
     container_T m_container;
 };
 
 template<typename type_T, typename container_T>
-std::optional<type_T> queue_mutex_t<type_T, container_T>::dequeue() const
+std::optional<type_T> queue_mutex_t<type_T, container_T>::dequeue()
 {
-    if (m_container.empty()) {
+    if (is_empty()) {
         return {};
     }
-    return m_container.front();
+
+    std::unique_lock lock(m_mutex);
+    const auto value = m_container.front();
+    m_container.pop_front();
+    return value;
 }
 
 template<typename type_T, typename container_T>
 auto queue_mutex_t<type_T, container_T>::enqueue(type_T value) -> void {
+    std::unique_lock lock(m_mutex);
     m_container.push_back(value);
+}
+
+template<typename type_T, typename container_T>
+auto queue_mutex_t<type_T, container_T>::is_empty() const -> bool {
+    std::shared_lock lock(m_mutex);
+    return m_container.empty();
 }
 }
