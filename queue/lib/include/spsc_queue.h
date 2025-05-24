@@ -14,7 +14,7 @@ template<
 class spsc_queue_t {
 public:
     [[nodiscard]]
-    auto dequeue() -> std::optional<type_T>;
+    auto try_dequeue() -> std::optional<type_T>;
 
     auto enqueue(type_T value) -> void;
 
@@ -29,8 +29,8 @@ template<
     typename type_T,
     template<typename, typename> class impl_T,
     template<typename> class container_T>
-auto spsc_queue_t<type_T, impl_T, container_T>::dequeue() -> std::optional<type_T> {
-    return m_impl.dequeue();
+auto spsc_queue_t<type_T, impl_T, container_T>::try_dequeue() -> std::optional<type_T> {
+    return m_impl.try_dequeue();
 }
 
 template<typename type_T, template <typename, typename> class impl_T, template <typename> class container_T>

@@ -12,7 +12,7 @@ class queue_mutex_t
 {
 public:
     [[nodiscard]]
-    auto dequeue() -> std::optional<type_T>;
+    auto try_dequeue() -> std::optional<type_T>;
     auto enqueue(type_T value) -> void;
     [[nodiscard]]
     auto is_empty() const -> bool;
@@ -22,7 +22,7 @@ private:
 };
 
 template<typename type_T, typename container_T>
-std::optional<type_T> queue_mutex_t<type_T, container_T>::dequeue()
+std::optional<type_T> queue_mutex_t<type_T, container_T>::try_dequeue()
 {
     if (is_empty()) {
         return {};
