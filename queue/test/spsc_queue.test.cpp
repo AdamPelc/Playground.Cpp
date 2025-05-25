@@ -5,16 +5,27 @@
 #include <thread>
 #include <latch>
 
-TEST(spsc_queue_test, get_front_element_from_empty_queue) {
-    auto queue = spsc_queue_t<int, impl::queue_mutex_t>();
+#include "impl/queue_wip.hpp"
+
+template<typename impl_T>
+class spsc_queue_test : public ::testing::Test {};
+
+using queue_types = ::testing::Types<
+    spsc_queue_t<int, impl::queue_mutex_t>,
+    spsc_queue_t<int, impl::queue_wip_t>>;
+TYPED_TEST_SUITE(spsc_queue_test, queue_types);
+
+
+TYPED_TEST(spsc_queue_test, get_front_element_from_empty_queue) {
+    auto queue = TypeParam(1'000);
 
     const auto result = queue.try_dequeue();
 
     ASSERT_EQ(result, std::nullopt);
 }
 
-TEST(spsc_queue_test, get_front_element_from_queue_with_single_element){
-    auto queue = spsc_queue_t<int, impl::queue_mutex_t>();
+TYPED_TEST(spsc_queue_test, get_front_element_from_queue_with_single_element){
+    auto queue = TypeParam(1'000);
 
     queue.enqueue(1);
     const auto result = queue.try_dequeue();
@@ -22,8 +33,8 @@ TEST(spsc_queue_test, get_front_element_from_queue_with_single_element){
     ASSERT_EQ(result, 1);
 }
 
-TEST(spsc_queue_test, get_front_element_from_queue_with_multiple_elements) {
-    auto queue = spsc_queue_t<int, impl::queue_mutex_t>();
+TYPED_TEST(spsc_queue_test, get_front_element_from_queue_with_multiple_elements) {
+    auto queue = TypeParam(1'000);
 
     queue.enqueue(1);
     queue.enqueue(2);
@@ -34,14 +45,14 @@ TEST(spsc_queue_test, get_front_element_from_queue_with_multiple_elements) {
     ASSERT_EQ(queue.try_dequeue(), 3);
 }
 
-TEST(spsc_queue_test, check_if_queue_is_empty) {
-    auto queue = spsc_queue_t<int, impl::queue_mutex_t>();
+TYPED_TEST(spsc_queue_test, check_if_queue_is_empty) {
+    auto queue = TypeParam(1'000);
 
     ASSERT_TRUE(queue.is_empty());
 }
 
-TEST(spsc_queue_test, get_concurent_enqueue_and_dequeue) {
-    auto queue = spsc_queue_t<int, impl::queue_mutex_t>();
+TYPED_TEST(spsc_queue_test, get_concurent_enqueue_and_dequeue) {
+    auto queue = TypeParam(10'000);
     std::latch latch{2};
 
     auto t1 = std::jthread([&queue, &latch]() {

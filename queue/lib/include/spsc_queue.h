@@ -1,11 +1,18 @@
 #pragma once
 
+#include "impl/queue_mutex.hpp"
+
 #include <deque>
 #include <mutex>
 #include <shared_mutex>
 #include <optional>
 
-#include "impl/queue_mutex.hpp"
+// Few notes about single producer single consumer queue. During desing phase there are few things to consider:
+// 1. Can it have fixed size?
+// - Yes, circular buffer can be used.
+// - No, than process of reallocation has to be locked on both threads.
+// For circular buffer power of two can be used to reduce number of operations. Since, mask can be applied to recuse about
+// of bits for index calculation.
 
 template<
     typename type_T,
@@ -13,6 +20,7 @@ template<
     template<typename> class container_T = std::deque>
 class spsc_queue_t {
 public:
+    explicit spsc_queue_t(std::size_t capacity);
     [[nodiscard]]
     auto try_dequeue() -> std::optional<type_T>;
 
@@ -24,6 +32,9 @@ public:
 private:
     impl_T<type_T, container_T<type_T>> m_impl;
 };
+
+template<typename type_T, template <typename, typename> class impl_T, template <typename> class container_T>
+spsc_queue_t<type_T, impl_T, container_T>::spsc_queue_t(std::size_t capacity) : m_impl(capacity) {}
 
 template<
     typename type_T,
