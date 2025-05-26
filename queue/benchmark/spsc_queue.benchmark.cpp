@@ -51,7 +51,7 @@ void BM_spsc_queue2_enqueue_dequeue_small_elements(benchmark::State& state) {
 }
 
 static std::vector<std::uint8_t> buffer(65536);
-static spsc_queue_t<std::vector<std::uint8_t>> big_queue(10'000);
+static spsc_queue_t<std::vector<std::uint8_t>> big_queue(1'000);
 void BM_spsc_queue_enqueue_dequeue_64kB_elements(benchmark::State& state) {
     const auto is_producer = state.thread_index() & 1;
     constexpr auto loop_iterations = 10;
@@ -71,7 +71,7 @@ void BM_spsc_queue_enqueue_dequeue_64kB_elements(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * 64 * loop_iterations);
 }
 
-static spsc_queue_t<std::vector<std::uint8_t>, impl::queue_wip_t> big_queue2(10'000);
+static spsc_queue_t<std::vector<std::uint8_t>, impl::queue_wip_t> big_queue2(1'000);
 void BM_spsc_queue2_enqueue_dequeue_64kB_elements(benchmark::State& state) {
     const auto is_producer = state.thread_index() & 1;
     constexpr auto loop_iterations = 10;
