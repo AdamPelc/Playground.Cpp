@@ -1,12 +1,12 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "Animal/Cat/Cat.hpp"
 #include "Animal/Dog/Dog.hpp"
 #include "Animal/Parrot/Parrot.hpp"
 #include "Serialize/JSON/JsonSerializer.hpp"
 #include "Serialize/XML/XmlSerializer.hpp"
-
-#include <iostream>
-#include <vector>
-#include <memory>
 
 int main() {
     std::cout << "Hello World! Adam! \n";

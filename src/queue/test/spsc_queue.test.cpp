@@ -1,20 +1,19 @@
 #include "spsc_queue.h"
 
-#include <queue>
 #include <gtest/gtest.h>
-#include <thread>
+
 #include <latch>
+#include <queue>
+#include <thread>
 
 #include "impl/queue_wip.hpp"
 
-template<typename impl_T>
+template <typename impl_T>
 class spsc_queue_test : public ::testing::Test {};
 
-using queue_types = ::testing::Types<
-    spsc_queue_t<int, impl::queue_mutex_t>,
-    spsc_queue_t<int, impl::queue_wip_t>>;
+using queue_types =
+    ::testing::Types<spsc_queue_t<int, impl::queue_mutex_t>, spsc_queue_t<int, impl::queue_wip_t>>;
 TYPED_TEST_SUITE(spsc_queue_test, queue_types);
-
 
 TYPED_TEST(spsc_queue_test, get_front_element_from_empty_queue) {
     auto queue = TypeParam(1'000);
@@ -24,7 +23,7 @@ TYPED_TEST(spsc_queue_test, get_front_element_from_empty_queue) {
     ASSERT_EQ(result, std::nullopt);
 }
 
-TYPED_TEST(spsc_queue_test, get_front_element_from_queue_with_single_element){
+TYPED_TEST(spsc_queue_test, get_front_element_from_queue_with_single_element) {
     auto queue = TypeParam(1'000);
 
     queue.enqueue(1);

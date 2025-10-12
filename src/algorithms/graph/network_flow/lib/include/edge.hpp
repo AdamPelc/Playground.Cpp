@@ -2,8 +2,7 @@
 
 #include "types.hpp"
 
-class edge_t
-{
+class edge_t {
 public:
     edge_t(source_node_t from, destination_node_t to, capacity_t capacity);
 
@@ -12,7 +11,7 @@ public:
     [[nodiscard]] capacity_t get_capacity() const;
 
 private:
-    source_node_t m_from = {};
+    source_node_t m_from    = {};
     destination_node_t m_to = {};
-    capacity_t m_capacity = {};
+    capacity_t m_capacity   = {};
 };

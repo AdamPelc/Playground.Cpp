@@ -5,4 +5,4 @@
 
 using AnimalVisitor = Visitor<class Dog, class Cat, class Parrot>;
 
-#endif// PLAYGROUND_CPP_ANIMAL_VISITOR_HPP
+#endif  // PLAYGROUND_CPP_ANIMAL_VISITOR_HPP

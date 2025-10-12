@@ -1,5 +1,3 @@
 #include "Serializer.hpp"
 
-std::string Serializer::Serialize() const {
-    return buffer;
-}
+std::string Serializer::Serialize() const { return buffer; }

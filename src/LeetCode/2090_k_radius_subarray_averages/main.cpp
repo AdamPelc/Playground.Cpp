@@ -6,17 +6,15 @@ public:
     std::vector<int> getAverages(std::vector<int>& nums, int k) {
         std::vector<int> result(nums.size(), -1);
 
-        if(nums.size() < 2 * k + 1)
-        {
+        if (nums.size() < 2 * k + 1) {
             return result;
         }
 
-        std::vector<int> runningTotal = [&nums]{
+        std::vector<int> runningTotal = [&nums] {
             std::vector<int> result;
             result.reserve(nums.size());
             auto currentValue = 0;
-            for(const auto value : nums)
-            {
+            for (const auto value : nums) {
                 currentValue += value;
                 result.push_back(currentValue);
             }
@@ -25,8 +23,7 @@ public:
         }();
 
         const auto rightLimit = nums.size() - k;
-        for(auto idx = k; idx != rightLimit; ++idx)
-        {
+        for (auto idx = k; idx != rightLimit; ++idx) {
             auto sum = runningTotal.at(k + idx);
             if (idx != k) {
                 sum -= runningTotal.at(idx - k - 1);
@@ -38,15 +35,14 @@ public:
     }
 };
 
-int main()
-{
+int main() {
     std::cout << "LeetCode: 2090\n";
 
-    auto solution = Solution();
+    auto solution     = Solution();
     std::vector input = {8};
-    auto result = solution.getAverages(input, 100000);
+    auto result       = solution.getAverages(input, 100000);
     std::cout << "{ ";
-    for(const auto value : result) {
+    for (const auto value : result) {
         std::cout << value << ", ";
     }
     std::cout << "}\n";

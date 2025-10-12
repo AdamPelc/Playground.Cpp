@@ -4,11 +4,11 @@
 
 class edge_throughput_t {
 public:
-    edge_throughput_t() = delete;
-    edge_throughput_t(const edge_throughput_t&) = delete;
+    edge_throughput_t()                                    = delete;
+    edge_throughput_t(const edge_throughput_t&)            = delete;
     edge_throughput_t& operator=(const edge_throughput_t&) = delete;
-    edge_throughput_t( edge_throughput_t&&) = delete;
-    edge_throughput_t& operator=(edge_throughput_t&&) = delete;
+    edge_throughput_t(edge_throughput_t&&)                 = delete;
+    edge_throughput_t& operator=(edge_throughput_t&&)      = delete;
 
     explicit edge_throughput_t(capacity_t capacity);
 
@@ -17,5 +17,5 @@ public:
 
 private:
     capacity_t m_capacity = {};
-    flow_t m_flow = {};
+    flow_t m_flow         = {};
 };

@@ -1,33 +1,30 @@
 #include "Vector.h"
 
-#include <algorithm>
 #include <fmt/core.h>
 #include <gtest/gtest.h>
+
+#include <algorithm>
 
 using namespace ape;
 
 static auto* const fakeBeginPointer{reinterpret_cast<int*>(0)};
-auto FakeAllocator(std::size_t) {
-    return fakeBeginPointer;
-}
+auto FakeAllocator(std::size_t) { return fakeBeginPointer; }
 
-TEST(Vector, GetBegin)
-{
+TEST(Vector, GetBegin) {
     // Arrange
     auto expectedBeginPointer{fakeBeginPointer};
     auto vectorSize{1};
     Vector vector(vectorSize, FakeAllocator);
 
     // Act
-    auto beginIterator {vector.begin()};
+    auto beginIterator{vector.begin()};
     auto actualBeginPointer{beginIterator.GetRawPointer()};
 
     // Asse
     EXPECT_EQ(expectedBeginPointer, actualBeginPointer);
 }
 
-TEST(Vector, GetEnd)
-{
+TEST(Vector, GetEnd) {
     // Arrange
     const auto vectorSize{2};
     const auto expectedEndPointer{fakeBeginPointer + vectorSize};
@@ -60,9 +57,7 @@ TEST(Vector, AlgorithmFill) {
     Vector vector(vectorSize);
 
     // Act
-    std::generate(vector.begin(), vector.end(), [n = 1]() mutable {
-        return n++;
-    });
+    std::generate(vector.begin(), vector.end(), [n = 1]() mutable { return n++; });
 
     // Assert
     auto iterator = vector.begin();

@@ -1,8 +1,8 @@
 #include "fibonacci.h"
+
 #include <gtest/gtest.h>
 
-TEST(Fibonacci, IndexZero)
-{
+TEST(Fibonacci, IndexZero) {
     // Arrange
     const auto expected = 0;
 

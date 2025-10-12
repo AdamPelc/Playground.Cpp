@@ -3,25 +3,26 @@
 #include <optional>
 #include <stack>
 
-template<typename T>
+template <typename T>
 class stack_lock_guard_t {
 public:
     void push(T value);
     std::optional<T> pop();
     std::optional<T> top() const;
     void reset();
+
 private:
     mutable std::mutex m_mutex;
     std::stack<T> m_stack;
 };
 
-template<typename T>
+template <typename T>
 void stack_lock_guard_t<T>::push(T value) {
     std::lock_guard lock(m_mutex);
     m_stack.push(value);
 }
 
-template<typename T>
+template <typename T>
 std::optional<T> stack_lock_guard_t<T>::pop() {
     std::lock_guard lock(m_mutex);
     if (m_stack.empty()) {
@@ -32,17 +33,17 @@ std::optional<T> stack_lock_guard_t<T>::pop() {
     return value;
 }
 
-template<typename T>
+template <typename T>
 std::optional<T> stack_lock_guard_t<T>::top() const {
     std::lock_guard lock(m_mutex);
-    if(m_stack.empty()) {
+    if (m_stack.empty()) {
         return {};
     }
 
     return m_stack.top();
 }
 
-template<typename T>
+template <typename T>
 void stack_lock_guard_t<T>::reset() {
     std::stack<T>().swap(m_stack);
 }

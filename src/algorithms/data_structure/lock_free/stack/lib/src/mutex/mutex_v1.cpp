@@ -8,13 +8,9 @@ void mutex_v1_t::lock() {
     }
 }
 
-void mutex_v1_t::lock_shared() {
-    lock();
-}
+void mutex_v1_t::lock_shared() { lock(); }
 
-void mutex_v1_t::unlock_shared() {
-    unlock();
-}
+void mutex_v1_t::unlock_shared() { unlock(); }
 
 void mutex_v1_t::unlock() {
     m_is_unique_lock.clear(std::memory_order_release);

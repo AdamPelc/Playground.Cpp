@@ -30,7 +30,7 @@ std::string XmlSerializer::Serialize(const Dog& dog) const {
     return response;
 }
 
-std::string XmlSerializer::Serialize( const Parrot& parrot ) const {
+std::string XmlSerializer::Serialize(const Parrot& parrot) const {
     using namespace std::string_literals;
 
     std::string response;

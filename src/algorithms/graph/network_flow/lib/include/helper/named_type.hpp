@@ -1,11 +1,10 @@
 #pragma once
 
-#include <utility>
 #include <functional>
+#include <utility>
 
-template<typename T, typename TParameter>
-class named_type_t
-{
+template <typename T, typename TParameter>
+class named_type_t {
 public:
     using value_type_t = T;
 
@@ -22,7 +21,7 @@ private:
     T m_value{};
 };
 
-template<typename T>
+template <typename T>
 struct named_type_hasher_t {
     std::size_t operator()(T const& obj) const noexcept {
         return std::hash<typename T::value_type_t>()(obj.get());

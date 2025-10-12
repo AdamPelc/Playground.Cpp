@@ -2,10 +2,10 @@
 #ifndef PLAYGROUND_CPP_PARROT_HPP
 #define PLAYGROUND_CPP_PARROT_HPP
 
+#include <string_view>
+
 #include "Serialize/Serializable.hpp"
 #include "Serialize/Serializer.hpp"
-
-#include <string_view>
 
 class Parrot : public Serializable {
 public:
@@ -21,5 +21,4 @@ private:
     std::size_t age;
 };
 
-
-#endif// PLAYGROUND_CPP_PARROT_HPP
+#endif  // PLAYGROUND_CPP_PARROT_HPP

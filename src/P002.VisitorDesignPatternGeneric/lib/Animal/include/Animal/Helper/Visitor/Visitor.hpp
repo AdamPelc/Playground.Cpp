@@ -1,7 +1,7 @@
 #ifndef PLAYGROUND_CPP_VISITOR_HPP
 #define PLAYGROUND_CPP_VISITOR_HPP
 
-template <typename ... Types>
+template <typename... Types>
 class Visitor;
 
 template <typename T>
@@ -10,11 +10,11 @@ public:
     virtual void Visit(const T& obj) = 0;
 };
 
-template <typename T, typename ... Types>
-class Visitor<T, Types ...> : public Visitor<Types ...> {
+template <typename T, typename... Types>
+class Visitor<T, Types...> : public Visitor<Types...> {
 public:
-    using Visitor<Types ...>::Visit;
+    using Visitor<Types...>::Visit;
     virtual void Visit(const T& obj) = 0;
 };
 
-#endif// PLAYGROUND_CPP_VISITOR_HPP
+#endif  // PLAYGROUND_CPP_VISITOR_HPP

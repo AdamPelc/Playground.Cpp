@@ -1,11 +1,12 @@
 #include "Vector.h"
+
 #include <gtest/gtest.h>
+
 #include <limits>
 
 using namespace ape;
 
-TEST(VectorIterator, GetValueReference)
-{
+TEST(VectorIterator, GetValueReference) {
     // Arrange
     int expectedIteratorValue{std::numeric_limits<int>::max()};
     Vector::Iterator iterator(&expectedIteratorValue);
@@ -14,8 +15,7 @@ TEST(VectorIterator, GetValueReference)
     EXPECT_EQ(expectedIteratorValue, *iterator);
 }
 
-TEST(VectorIterator, GetRawPointerWithNullptr)
-{
+TEST(VectorIterator, GetRawPointerWithNullptr) {
     // Arrange
     auto expectedPointer = nullptr;
     Vector::Iterator iterator(expectedPointer);
@@ -27,8 +27,7 @@ TEST(VectorIterator, GetRawPointerWithNullptr)
     EXPECT_EQ(expectedPointer, actualPointer);
 }
 
-TEST(VectorIterator, GetRawPointerWithNotNullptr)
-{
+TEST(VectorIterator, GetRawPointerWithNotNullptr) {
     // Arrange
     auto expectedPointer = reinterpret_cast<int*>(1);
     Vector::Iterator iterator(expectedPointer);
@@ -40,8 +39,7 @@ TEST(VectorIterator, GetRawPointerWithNotNullptr)
     EXPECT_EQ(expectedPointer, actualPointer);
 }
 
-TEST(VectorIterator, GetNextIterator)
-{
+TEST(VectorIterator, GetNextIterator) {
     // Arrange
     int values[] = {1, 2};
     Vector::Iterator iterator(values);
@@ -53,8 +51,7 @@ TEST(VectorIterator, GetNextIterator)
     EXPECT_EQ(expectedIterator, iterator);
 }
 
-TEST(VectorIterator, OperatorEqualityIsEqual)
-{
+TEST(VectorIterator, OperatorEqualityIsEqual) {
     // Arrange
     int iteratorValue{0};
     Vector::Iterator iterator1(&iteratorValue);
@@ -64,8 +61,7 @@ TEST(VectorIterator, OperatorEqualityIsEqual)
     EXPECT_TRUE(iterator1 == iterator2);
 }
 
-TEST(VectorIterator, OperatorEqualityIsNotEqual)
-{
+TEST(VectorIterator, OperatorEqualityIsNotEqual) {
     // Arrange
     int iterator1Value{0};
     Vector::Iterator iterator1(&iterator1Value);
@@ -76,8 +72,7 @@ TEST(VectorIterator, OperatorEqualityIsNotEqual)
     EXPECT_FALSE(iterator1 == iterator2);
 }
 
-TEST(VectorIterator, OperatorNotequalIsEqual)
-{
+TEST(VectorIterator, OperatorNotequalIsEqual) {
     // Arrange
     int iteratorValue{0};
     Vector::Iterator iterator1(&iteratorValue);
@@ -87,8 +82,7 @@ TEST(VectorIterator, OperatorNotequalIsEqual)
     EXPECT_FALSE(iterator1 != iterator2);
 }
 
-TEST(VectorIterator, OperatorNotequalIsNotEqual)
-{
+TEST(VectorIterator, OperatorNotequalIsNotEqual) {
     // Arrange
     int iterator1Value{0};
     Vector::Iterator iterator1(&iterator1Value);

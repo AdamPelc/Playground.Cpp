@@ -2,10 +2,10 @@
 #ifndef PLAYGROUND_CPP_DOG_HPP
 #define PLAYGROUND_CPP_DOG_HPP
 
-#include "Serialize/Serializable.hpp"
-
-#include <string_view>
 #include <cstdint>
+#include <string_view>
+
+#include "Serialize/Serializable.hpp"
 
 class Dog : public Serializable {
 public:
@@ -15,10 +15,10 @@ public:
     [[nodiscard]] std::size_t GetAge() const;
 
     [[nodiscard]] std::string Serialize(const Serializer& serializer) const override;
+
 private:
     std::string name;
     std::size_t age;
 };
 
-
-#endif// PLAYGROUND_CPP_DOG_HPP
+#endif  // PLAYGROUND_CPP_DOG_HPP

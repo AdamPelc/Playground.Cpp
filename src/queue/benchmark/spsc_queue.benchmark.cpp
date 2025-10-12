@@ -2,13 +2,16 @@
 
 #include <benchmark/benchmark.h>
 #include <fmt/base.h>
+
 #include <random>
 
 #include "impl/queue_wip.hpp"
 
-#define REPEAT2(x)  x; x;
-#define REPEAT4(x)  REPEAT2(x) REPEAT2(x)
-#define REPEAT8(x)  REPEAT4(x) REPEAT4(x)
+#define REPEAT2(x) \
+    x;             \
+    x;
+#define REPEAT4(x) REPEAT2(x) REPEAT2(x)
+#define REPEAT8(x) REPEAT4(x) REPEAT4(x)
 #define REPEAT16(x) REPEAT8(x) REPEAT8(x)
 #define REPEAT32(x) REPEAT16(x) REPEAT16(x)
 #define REPEAT64(x) REPEAT32(x) REPEAT32(x)
@@ -24,7 +27,7 @@ void BM_spsc_queue_enqueue_dequeue_small_elements(benchmark::State& state) {
             }
         } else {
             for (int i = 0; i < 100; ++i) {
-                REPEAT64(benchmark::DoNotOptimize(                       queue.try_dequeue()))
+                REPEAT64(benchmark::DoNotOptimize(queue.try_dequeue()))
             }
         }
     }
@@ -42,7 +45,7 @@ void BM_spsc_queue2_enqueue_dequeue_small_elements(benchmark::State& state) {
             }
         } else {
             for (int i = 0; i < 100; ++i) {
-                REPEAT64(benchmark::DoNotOptimize(                       queue2.try_dequeue()))
+                REPEAT64(benchmark::DoNotOptimize(queue2.try_dequeue()))
             }
         }
     }
@@ -53,7 +56,7 @@ void BM_spsc_queue2_enqueue_dequeue_small_elements(benchmark::State& state) {
 static std::vector<std::uint8_t> buffer(65536);
 static spsc_queue_t<std::vector<std::uint8_t>> big_queue(1'000);
 void BM_spsc_queue_enqueue_dequeue_64kB_elements(benchmark::State& state) {
-    const auto is_producer = state.thread_index() & 1;
+    const auto is_producer         = state.thread_index() & 1;
     constexpr auto loop_iterations = 10;
 
     for (auto _ : state) {
@@ -73,7 +76,7 @@ void BM_spsc_queue_enqueue_dequeue_64kB_elements(benchmark::State& state) {
 
 static spsc_queue_t<std::vector<std::uint8_t>, impl::queue_wip_t> big_queue2(1'000);
 void BM_spsc_queue2_enqueue_dequeue_64kB_elements(benchmark::State& state) {
-    const auto is_producer = state.thread_index() & 1;
+    const auto is_producer         = state.thread_index() & 1;
     constexpr auto loop_iterations = 10;
 
     for (auto _ : state) {

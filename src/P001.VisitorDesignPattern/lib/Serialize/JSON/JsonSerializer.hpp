@@ -10,4 +10,4 @@ class JsonSerializer : public Serializer {
     [[nodiscard]] std::string Serialize(const Parrot& parrot) const override;
 };
 
-#endif// PLAYGROUND_CPP_JSONSERIALIZER_HPP
+#endif  // PLAYGROUND_CPP_JSONSERIALIZER_HPP

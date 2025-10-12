@@ -7,6 +7,7 @@ public:
     void lock_shared();
     void unlock_shared();
     void unlock();
+
 private:
     std::atomic_flag m_is_unique_lock = {};
 };

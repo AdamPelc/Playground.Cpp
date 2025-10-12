@@ -10,4 +10,4 @@ class XmlSerializer : public Serializer {
     [[nodiscard]] std::string Serialize(const Parrot& parrot) const override;
 };
 
-#endif// PLAYGROUND_CPP_XMLSERIALIZER_HPP
+#endif  // PLAYGROUND_CPP_XMLSERIALIZER_HPP
