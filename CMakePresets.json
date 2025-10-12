@@ -1,0 +1,103 @@
+{
+  "version": 10,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 31
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": [
+        "default"
+      ],
+      "displayName": "Release configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "rel_with_deb_info",
+      "inherits": [
+        "default"
+      ],
+      "displayName": "Optimized configuration with debug symbols",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "asan_ubsan",
+      "inherits": [
+        "default"
+      ],
+      "displayName": "ASAN and UBSAN sanitizer configuration optimized (-O2)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ASAN_ENABLED": true,
+        "UBSAN_ENABLED": true
+      }
+    },
+    {
+      "name": "tsan",
+      "inherits": [
+        "default"
+      ],
+      "displayName": "TSAN optimized (-O2)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TSAN_ENABLED": true
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": [
+        "default"
+      ],
+      "displayName": "Debug configuration without optimizations",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release",
+      "displayName": "Release build",
+      "configurePreset": "release"
+    },
+    {
+      "name": "asan_ubsan",
+      "displayName": "ASAN and TSAN build",
+      "configurePreset": "asan_ubsan"
+    },
+    {
+      "name": "tsan",
+      "displayName": "TSAN build",
+      "configurePreset": "tsan"
+    },
+    {
+      "name": "debug",
+      "displayName": "debug build",
+      "configurePreset": "debug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "all",
+      "displayName": "Run all tests",
+      "configurePreset": "release"
+    }
+  ],
+  "packagePresets": [],
+  "workflowPresets": []
+}

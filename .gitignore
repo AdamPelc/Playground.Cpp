@@ -37,3 +37,6 @@
 # Generated files and folders
 out
 *_venv
+
+# CMake user preset configuration file
+CMakeUserPresets.json
