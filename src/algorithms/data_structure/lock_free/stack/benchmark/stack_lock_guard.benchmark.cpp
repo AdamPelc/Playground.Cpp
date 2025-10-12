@@ -44,7 +44,7 @@ static void BM_ReadOnlyFromTheTop_MT(benchmark::State& state) {
 template<template<class, class> class TStack, class TMutex>
 static void BM_PushAndPop(benchmark::State& state)
 {
-    static TStack<int, TMutex> stack;
+    static TStack<int, TMutex> local_stack;
 
     if (state.threads() & 1)
     {
@@ -53,7 +53,7 @@ static void BM_PushAndPop(benchmark::State& state)
     }
 
     if (state.thread_index() == 0) {
-        stack.reset();
+        local_stack.reset();
     }
 
     const bool is_producer = state.thread_index() & 1;
@@ -62,9 +62,9 @@ static void BM_PushAndPop(benchmark::State& state)
     for (auto _ : state)
     {
         if (is_producer)
-            stack.push(0xBEEF);
+            local_stack.push(0xBEEF);
         else
-            stack.pop();
+            local_stack.pop();
     }
     state.SetItemsProcessed(state.iterations());
 }

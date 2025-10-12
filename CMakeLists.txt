@@ -1,12 +1,21 @@
 cmake_minimum_required(VERSION 3.31)
-project(Playground.Cpp)
+project(playground_cpp
+    LANGUAGES CXX
+)
 
 ########################################################################################################################
 # Global Settings
 ########################################################################################################################
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_testing()
+
+########################################################################################################################
+# CMake files
+########################################################################################################################
+include(cmake/compiler_warnings.cmake)
+
 ########################################################################################################################
 # 3PP Packages
 ########################################################################################################################
@@ -15,22 +24,13 @@ find_package(GTest CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
 
 #########################################################################################################################
-## Compiler options
+# Compiler options
 #########################################################################################################################
 # Version C++23
 add_library(cpp_ver_23 INTERFACE)
 target_compile_features(cpp_ver_23
     INTERFACE
     cxx_std_23
-)
-# Common compiler warnings
-add_library(compiler_warnings INTERFACE)
-target_compile_options(compiler_warnings
-INTERFACE
-    -Wall
-    -Werror
-    -Wextra
-    -pedantic
 )
 
 ########################################################################################################################
