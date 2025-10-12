@@ -36,12 +36,4 @@ INTERFACE
 ########################################################################################################################
 # Playgrounds
 ########################################################################################################################
-add_subdirectory(algorithms)
-add_subdirectory(Book)
-add_subdirectory(CustomIterator)
-add_subdirectory(LeetCode)
-add_subdirectory(P001.VisitorDesignPattern)
-add_subdirectory(P002.VisitorDesignPatternGeneric)
-add_subdirectory(P003.Spectre)
-add_subdirectory(performance)
-add_subdirectory(queue)
+add_subdirectory(src)
