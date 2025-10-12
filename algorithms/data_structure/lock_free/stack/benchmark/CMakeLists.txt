@@ -10,7 +10,7 @@ target_link_libraries(lf_stack.benchmark
 PRIVATE
     lf_stack
     benchmark::benchmark
-    compiler_features
+    cpp_ver_23
     compiler_warnings
     atomic
 )

@@ -9,9 +9,9 @@ add_executable(fibonacci.test)
 
 target_link_libraries(fibonacci.test
 PRIVATE
-        fibonacci
-        gtest
-        gtest_main
+    fibonacci
+    GTest::gtest
+    GTest::gtest_main
 )
 
 add_subdirectory(src)

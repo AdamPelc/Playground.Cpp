@@ -39,7 +39,6 @@ INTERFACE
 add_subdirectory(algorithms)
 add_subdirectory(Book)
 add_subdirectory(CustomIterator)
-add_subdirectory(InstructionLevelParallelism)
 add_subdirectory(LeetCode)
 add_subdirectory(P001.VisitorDesignPattern)
 add_subdirectory(P002.VisitorDesignPatternGeneric)

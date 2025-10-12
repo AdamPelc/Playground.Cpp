@@ -6,6 +6,6 @@ PRIVATE
 target_link_libraries(disjoint_set.test
 PRIVATE
     disjoint_set
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
 )

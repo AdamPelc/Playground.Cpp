@@ -21,7 +21,7 @@ public:
         explicit Iterator(pointer ptr) : mPointer{ptr} {}
 
         auto operator*() const -> reference;
-//        auto operator++() -> Iterator&;
+        auto operator++() -> Iterator&;
         Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
 
         [[nodiscard]] pointer GetRawPointer() const { return mPointer; }

@@ -8,7 +8,7 @@ PUBLIC
 target_link_libraries(lf_stack
 PRIVATE
     compiler_warnings
-    compiler_features
+    cpp_ver_23
     #thread_sanitizer
 )
 

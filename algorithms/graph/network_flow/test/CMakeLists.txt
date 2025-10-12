@@ -6,6 +6,6 @@ PRIVATE
 target_link_libraries(network_flow.test
 PRIVATE
     network_flow
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
 )
