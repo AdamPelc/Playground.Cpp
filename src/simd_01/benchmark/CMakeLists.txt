@@ -1,0 +1,13 @@
+add_executable(simd_01.benchmark)
+target_sources(simd_01.benchmark
+PRIVATE
+    simd.benchmark.cpp
+)
+target_link_libraries(simd_01.benchmark
+PRIVATE
+    simd_01
+    compiler_warnings
+    cpp_ver_23
+    benchmark::benchmark
+    benchmark::benchmark_main
+)

@@ -1,0 +1,12 @@
+add_executable(simd_01.test)
+target_sources(simd_01.test
+PRIVATE
+    simd.test.cpp
+)
+target_link_libraries(simd_01.test
+PRIVATE
+    simd_01
+    cpp_ver_23
+    GTest::gtest
+    GTest::gtest_main
+)
