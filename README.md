@@ -2,97 +2,74 @@
 
 A C++ playground repository containing various experiments, algorithms, design patterns, and performance benchmarks.
 
-## Contents
-
-This repository includes the following components:
-
-### Algorithms & Data Structures
-- **algorithms/** - Implementation of various algorithms including:
-  - Data structures
-  - Graph algorithms
-- **LeetCode/** - Solutions to LeetCode problems
-
-### Design Patterns
-- **P001.VisitorDesignPattern/** - Classic visitor pattern implementation
-- **P002.VisitorDesignPatternGeneric/** - Generic visitor pattern using modern C++ templates
-- **CustomIterator/** - Custom iterator implementations
-
-### Performance & Optimization
-- **performance/** - Performance experiments including:
-  - CPU frequency scaling tests
-  - Fibonacci implementation benchmarks
-- **InstructionLevelParallelism/** - Instruction-level parallelism (ILP) demonstrations
-- **P003.Spectre/** - Spectre vulnerability exploration
-- **queue/** - Lock-free queue implementations with benchmarks and tests
-
-### Book Examples
-- **Book/** - Code examples from "The Art of Writing Efficient Programs"
-
 ## Requirements
 
-- CMake 3.22 or higher
-- C++23 compatible compiler (GCC 11+, Clang 14+, or MSVC 2022+)
-- vcpkg or system package manager for dependencies
-
-### Dependencies
-
-The following libraries are required:
-- **fmt** - Modern formatting library
-- **GTest** - Google Test framework for unit tests
-- **benchmark** - Google Benchmark for performance testing
+- CMake 3.31 or higher
+- Ninja
+- C++23 compatible compiler (GCC 11+, Clang 14+)
+- [vcpkg](https://github.com/microsoft/vcpkg) with `$VCPKG_ROOT` set
 
 ## Building
 
-### Using vcpkg (Recommended)
-
-1. Install dependencies via vcpkg:
-```bash
-vcpkg install fmt gtest benchmark
-```
-
-2. Configure the project:
-```bash
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake
-```
-
-3. Build:
-```bash
-cmake --build build
-```
-
-### Alternative Build Methods
-
-If dependencies are installed system-wide:
+Dependencies (`fmt`, `gtest`, `benchmark`) are managed via vcpkg manifest mode and installed automatically during configure.
 
 ```bash
-cmake -B build -S .
-cmake --build build
+# Configure (presets: release, debug, rel_with_deb_info, asan_ubsan, tsan)
+cmake --preset <preset>
+
+# Build
+cmake --build out/build/<preset> --parallel
 ```
 
 ### Running Tests
 
-Tests are built automatically and can be run with:
-
 ```bash
-cd build
-ctest
+ctest --test-dir out/build/<preset> --output-on-failure --parallel
 ```
 
-Or run test executables directly from the build directory.
+Or run a single test executable directly:
+
+```bash
+./out/build/<preset>/src/queue/test/queue.test
+
+# With GTest filter
+./out/build/<preset>/src/queue/test/queue.test --gtest_filter="TestSuite.TestName"
+```
 
 ### Running Benchmarks
 
-Benchmark executables are located in the build directory structure matching the source layout:
-
 ```bash
-# Example: Run queue benchmarks
-./build/queue/benchmark/queue_benchmark
+./out/build/<preset>/src/queue/benchmark/queue.benchmark
 ```
 
-## Development
+### Sanitizer Presets
 
-The project uses:
+- `asan_ubsan` — AddressSanitizer + UndefinedBehaviorSanitizer
+- `tsan` — ThreadSanitizer (Linux only, mutually exclusive with ASAN)
+
+## Contents
+
+### Algorithms & Data Structures
+- **algorithms/** - Data structures and graph algorithms
+- **LeetCode/** - LeetCode problem solutions
+
+### Design Patterns
+- **P001.VisitorDesignPattern/** - Classic visitor pattern
+- **P002.VisitorDesignPatternGeneric/** - Generic visitor pattern using modern C++ templates
+- **CustomIterator/** - Custom iterator implementations
+
+### Performance & Optimization
+- **performance/** - CPU frequency scaling and Fibonacci benchmarks
+- **queue/** - Lock-free queue implementations with benchmarks and tests
+- **simd_01/** - SIMD (AVX2) experiments: scalar, unrolled, and vectorized implementations
+
+### Other
+- **P003.Spectre/** - Spectre vulnerability exploration
+- **Book/** - Code examples from "The Art of Writing Efficient Programs"
+
+## Code Style
+
 - C++23 standard
-- Strict compiler warnings (-Wall -Werror -Wextra -pedantic)
-- `.clang-format` for code formatting
-- `.clang-tidy` for static analysis
+- clang-format (Google-based, 100 column limit, 4-space indent)
+- clang-tidy with extensive checks
+- All warnings treated as errors (`-Werror -Wall -Wextra -Wpedantic`)
