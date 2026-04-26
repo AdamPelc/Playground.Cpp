@@ -1,0 +1,1282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VWAP: Scalar vs AVX2 — Memory → Registers → Result</title>
+    <style>
+      /* Palette ported from cpp-alchemy.com (Chirpy theme, dark mode) */
+      :root {
+        --bg: rgb(27, 27, 30);
+        --panel: #1e1e1e;
+        --panel-2: #232328;
+        --border: rgb(44, 45, 45);
+        --border-strong: #2e2f31;
+        --text: rgb(175, 176, 177);
+        --text-strong: #cccccc;
+        --muted: #868686;
+        --accent: rgb(138, 180, 248); /* link blue */
+        --accent-2: rgb(116, 178, 243); /* toc highlight */
+        --ok: #6ab04c;
+        --warn: #e5a13a;
+        --mem: rgb(138, 180, 248);
+        --reg: #b48ead;
+        /* Lane colors — desaturated to match Chirpy's restrained palette */
+        --lane-0: #d08770;
+        --lane-1: rgb(138, 180, 248);
+        --lane-2: #a3be8c;
+        --lane-3: #ebcb8b;
+        --shadow: rgb(21, 21, 21, 0.72) 0 6px 18px 0,
+          rgb(137, 135, 135, 0.16) 0 0 0 1px;
+        --radius: 0.375rem;
+        --radius-sm: 0.25rem;
+        --radius-lg: 0.5rem;
+        --font-sans: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+        --font-mono: SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 28px 22px 60px;
+      }
+
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-strong);
+        letter-spacing: -0.01em;
+      }
+      header p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      header p code,
+      .sub code,
+      header b {
+        color: var(--text-strong);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        box-shadow: var(--shadow);
+      }
+      .controls label {
+        color: var(--muted);
+        font-size: 0.8125rem;
+      }
+      .controls input[type="range"] {
+        accent-color: var(--accent);
+      }
+      .btn {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        padding: 7px 14px;
+        font-size: 0.8125rem;
+        font-family: inherit;
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease,
+          background 0.15s ease;
+      }
+      .btn:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .btn.primary {
+        background: transparent;
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn.primary:hover {
+        background: rgba(138, 180, 248, 0.08);
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.6875rem;
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+
+      .phase-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding: 12px 14px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        box-shadow: var(--shadow);
+      }
+      .phase-banner .label {
+        color: var(--muted);
+      }
+      .phase-banner .text {
+        color: var(--accent);
+        font-weight: 600;
+        font-family: var(--font-mono);
+      }
+      .phases {
+        display: flex;
+        gap: 6px;
+      }
+      .phases .p {
+        padding: 3px 10px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        font-size: 0.6875rem;
+        color: var(--muted);
+        background: transparent;
+        font-family: var(--font-mono);
+      }
+      .phases .p.active {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(138, 180, 248, 0.08);
+      }
+
+      /* layout: each function is a full-width card showing mem→regs→result */
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+        position: relative;
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-strong);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card h2 .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .card .sub {
+        color: var(--muted);
+        font-size: 0.8125rem;
+        margin-bottom: 16px;
+      }
+
+      .stage {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 16px;
+      }
+      @media (max-width: 1000px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .zone {
+        background: rgb(22, 22, 24);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        position: relative;
+      }
+      .zone h3 {
+        margin: 0 0 12px;
+        font-size: 0.6875rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .zone h3 .chip {
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        color: var(--text);
+        font-size: 0.625rem;
+        letter-spacing: 0;
+        font-weight: 400;
+        text-transform: none;
+        font-family: var(--font-mono);
+      }
+      .zone.mem h3 .chip {
+        border-color: var(--mem);
+        color: var(--mem);
+      }
+      .zone.reg h3 .chip {
+        border-color: var(--reg);
+        color: var(--reg);
+      }
+      .zone.result h3 .chip {
+        border-color: var(--ok);
+        color: var(--ok);
+      }
+
+      /* Memory strip */
+      .mem-row {
+        margin-bottom: 12px;
+      }
+      .mem-row .name {
+        font-size: 0.6875rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-family: var(--font-mono);
+      }
+      .mem-cells {
+        display: grid;
+        grid-template-columns: repeat(var(--cols, 12), minmax(0, 1fr));
+        gap: 4px;
+        position: relative;
+      }
+      .mc {
+        position: relative;
+        padding: 9px 2px;
+        text-align: center;
+        font-size: 0.6875rem;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        background: var(--panel);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        color: var(--text-strong);
+        transition: background 0.25s, border-color 0.25s, color 0.25s,
+          opacity 0.25s;
+      }
+      .mc.qty {
+        color: var(--warn);
+      }
+      .mc.scalar-hot {
+        border-color: var(--accent);
+        background: rgba(138, 180, 248, 0.12);
+        color: var(--accent);
+      }
+      .mc.l0 {
+        border-color: var(--lane-0);
+        background: rgba(208, 135, 112, 0.14);
+      }
+      .mc.l1 {
+        border-color: var(--lane-1);
+        background: rgba(138, 180, 248, 0.14);
+      }
+      .mc.l2 {
+        border-color: var(--lane-2);
+        background: rgba(163, 190, 140, 0.14);
+      }
+      .mc.l3 {
+        border-color: var(--lane-3);
+        background: rgba(235, 203, 139, 0.14);
+      }
+      .mc.done {
+        opacity: 0.35;
+      }
+      .idx {
+        position: absolute;
+        top: -7px;
+        left: 4px;
+        font-size: 0.5625rem;
+        color: var(--muted);
+        background: rgb(22, 22, 24);
+        padding: 0 4px;
+        border-radius: 2px;
+      }
+
+      .addr {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .addr b {
+        color: var(--text-strong);
+      }
+
+      /* Registers */
+      .reg-row {
+        display: grid;
+        grid-template-columns: 130px repeat(4, 1fr);
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .reg-row .reg-label {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        color: var(--muted);
+        text-align: right;
+        padding-right: 6px;
+      }
+      .reg-row .reg-label b {
+        color: var(--reg);
+      }
+      .lane {
+        padding: 10px 4px;
+        text-align: center;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        background: var(--panel);
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-strong);
+        transition: transform 0.25s, background 0.25s, border-color 0.25s,
+          box-shadow 0.25s;
+      }
+      .lane.l0 {
+        border-color: var(--lane-0);
+      }
+      .lane.l1 {
+        border-color: var(--lane-1);
+      }
+      .lane.l2 {
+        border-color: var(--lane-2);
+      }
+      .lane.l3 {
+        border-color: var(--lane-3);
+      }
+      .lane.pulse {
+        animation: pulse 0.7s ease;
+      }
+      .lane.flash {
+        animation: flash 0.7s ease;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        45% {
+          transform: scale(1.08);
+          box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.18);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes flash {
+        0% {
+          background: var(--panel);
+        }
+        45% {
+          background: rgba(106, 176, 76, 0.22);
+        }
+        100% {
+          background: var(--panel);
+        }
+      }
+
+      .scalar-reg {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .scalar-reg .reg-label {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        color: var(--muted);
+        text-align: right;
+      }
+      .scalar-reg .reg-label b {
+        color: var(--reg);
+      }
+      .scalar-reg .val {
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        background: var(--panel);
+        font-size: 0.8125rem;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-strong);
+      }
+      .scalar-reg .val.pulse {
+        animation: pulse 0.7s ease;
+      }
+
+      .op-line {
+        margin: 10px 0 6px;
+        padding: 9px 12px;
+        background: rgb(22, 22, 24);
+        border: 1px solid var(--border-strong);
+        border-left: 2px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text);
+        min-height: 34px;
+        transition: border-color 0.25s, background 0.25s, color 0.25s;
+      }
+      .op-line.active {
+        border-left-color: var(--accent);
+        color: var(--accent);
+        background: rgba(138, 180, 248, 0.06);
+      }
+
+      /* Flow arrows */
+      .flow {
+        position: relative;
+        height: 44px;
+        margin: 10px 0 2px;
+      }
+      .flow svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .arrow {
+        stroke: var(--border-strong);
+        stroke-width: 1.5;
+        fill: none;
+        stroke-dasharray: 5 4;
+      }
+      .arrow.active {
+        stroke: var(--accent);
+        animation: dash 0.9s linear infinite;
+      }
+      @keyframes dash {
+        to {
+          stroke-dashoffset: -18;
+        }
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .acc {
+        background: rgb(22, 22, 24);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+      }
+      .acc .k {
+        color: var(--muted);
+        font-size: 0.6875rem;
+        font-family: var(--font-mono);
+      }
+      .acc .v {
+        font-size: 1.0625rem;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-strong);
+        margin-top: 2px;
+      }
+      .final {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border-strong);
+        border-left: 2px solid var(--accent);
+        background: rgba(138, 180, 248, 0.05);
+        border-radius: var(--radius-sm);
+        font-size: 0.8125rem;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+      .final b {
+        color: var(--accent);
+        font-size: 1.375rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stats {
+        display: flex;
+        gap: 18px;
+        margin-top: 12px;
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        flex-wrap: wrap;
+      }
+      .stats b {
+        color: var(--text-strong);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+        font-size: 0.6875rem;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+      .legend .sw {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+
+      .note {
+        margin: 0 0 16px;
+        padding: 10px 14px;
+        background: rgba(235, 203, 139, 0.05);
+        border: 1px solid var(--border-strong);
+        border-left: 2px solid var(--warn);
+        border-radius: var(--radius-sm);
+        font-size: 0.8125rem;
+        color: var(--text);
+      }
+      .note .label {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--warn);
+        margin-right: 8px;
+      }
+      .note code {
+        font-size: 0.8125em;
+      }
+
+      footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 0.8125rem;
+        text-align: center;
+      }
+      code {
+        background: rgb(22, 22, 24);
+        padding: 1px 6px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        color: var(--text-strong);
+        font-family: var(--font-mono);
+        font-size: 0.875em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>VWAP: Scalar vs AVX2 — Memory → Registers → Result</h1>
+        <p>
+          Follow one order book through two implementations of
+          <b>VWAP = Σ(price·qty) / Σ(qty)</b>. Each card shows the same three
+          stages: data in <span style="color: var(--mem)">memory</span>, loads
+          into <span style="color: var(--reg)">CPU registers</span>, and the
+          final <span style="color: var(--lane-2)">result</span>. AVX2 packs 4
+          <code>double</code>s into one 256-bit register.
+        </p>
+      </header>
+
+      <div class="controls">
+        <button class="btn primary" id="playBtn">▶ Play</button>
+        <button class="btn" id="stepBtn">Step</button>
+        <button class="btn" id="resetBtn">Reset</button>
+        <button class="btn" id="regenBtn">New data</button>
+        <label style="margin-left: 10px">Depth
+          <input type="range" id="depth" min="4" max="16" step="4" value="12" />
+          <b id="depthVal">12</b>
+        </label>
+        <label>Speed
+          <input type="range" id="speed" min="1" max="10" step="1" value="5" />
+        </label>
+        <span class="tag">double precision · 4 lanes × 64 bit = 256 bit</span>
+      </div>
+
+      <div class="phase-banner">
+        <div>
+          <span class="label">Current stage:</span>
+          <span class="text" id="phaseText">idle — press Play</span>
+        </div>
+        <div class="phases">
+          <span class="p" data-p="load">1. LOAD</span>
+          <span class="p" data-p="mul">2. MULTIPLY</span>
+          <span class="p" data-p="add">3. ACCUMULATE</span>
+          <span class="p" data-p="reduce">4. REDUCE</span>
+          <span class="p" data-p="div">5. DIVIDE</span>
+        </div>
+      </div>
+
+      <!-- ===================== SCALAR ===================== -->
+      <section class="card" id="scalarCard">
+        <h2>
+          <span class="dot" style="background: var(--accent)"></span>
+          <code style="background:transparent;border:none;padding:0;color:var(--text-strong);font-size:1rem">get_vwap</code>
+          &nbsp;<span class="tag">source: scalar · 1 element / iter</span>
+        </h2>
+        <div class="sub">
+          The C++ source loads a single <code>double</code> from each array,
+          multiplies, and accumulates — one element per iteration. The
+          animation below tracks this <em>source-level</em> behavior.
+        </div>
+
+        <div class="note">
+          <span class="label">Compiler note</span>
+          With <code>-O3 -mavx2</code>, GCC actually
+          <b>auto-vectorizes</b> this loop. The emitted assembly uses
+          <code>vmovupd ymm0,[rsi+rax]</code> and
+          <code>vmulpd ymm0,ymm0,[rcx+rax]</code> — the same 256-bit load
+          and 4-wide multiply as the AVX2 intrinsic version. The difference
+          is the reduction: the accumulators stay <em>scalar</em>
+          (<code>xmm1</code>, <code>xmm5</code>), so each of the 4 lanes is
+          folded in element-by-element with
+          <code>vunpckhpd</code>/<code>vextractf128</code>+<code>vaddsd</code>
+          inside the hot loop, instead of using vector
+          <code>vaddpd</code> accumulators that get reduced once at the end.
+        </div>
+
+        <div class="stage">
+          <div class="zone mem">
+            <h3>Memory (RAM / L1 cache) <span class="chip">double[] arrays</span></h3>
+            <div class="mem-row">
+              <div class="name">prices[] @ 0x1000</div>
+              <div class="mem-cells" id="memPricesS"></div>
+            </div>
+            <div class="mem-row">
+              <div class="name">quantities[] @ 0x2000</div>
+              <div class="mem-cells" id="memQtysS"></div>
+            </div>
+            <div class="addr">Loading &prices[<span id="idxS">0</span>] and
+              &quantities[<span id="idxS2">0</span>]</div>
+
+            <div class="flow">
+              <svg viewBox="0 0 400 44" preserveAspectRatio="none">
+                <path
+                  id="arrS1"
+                  class="arrow"
+                  d="M 30 4 C 30 30, 200 30, 200 40"
+                />
+                <path
+                  id="arrS2"
+                  class="arrow"
+                  d="M 370 4 C 370 30, 200 30, 200 40"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="zone reg">
+            <h3>CPU scalar FP register (xmm) <span class="chip">64-bit double</span></h3>
+            <div class="scalar-reg">
+              <div class="reg-label"><b>xmm0</b> ← price</div>
+              <div class="val" id="regPS">—</div>
+            </div>
+            <div class="scalar-reg">
+              <div class="reg-label"><b>xmm1</b> ← qty</div>
+              <div class="val" id="regQS">—</div>
+            </div>
+            <div class="op-line" id="opS">mulsd xmm0, xmm1 &nbsp;&nbsp; // price * qty</div>
+            <div class="scalar-reg">
+              <div class="reg-label"><b>xmm2</b> sum_weighted</div>
+              <div class="val" id="regWS">0.00</div>
+            </div>
+            <div class="scalar-reg">
+              <div class="reg-label"><b>xmm3</b> sum_qty</div>
+              <div class="val" id="regSQS">0.00</div>
+            </div>
+
+            <div class="result-grid" style="margin-top: 10px">
+              <div class="acc">
+                <div class="k">Σ price·qty</div>
+                <div class="v" id="swS">0.00</div>
+              </div>
+              <div class="acc">
+                <div class="k">Σ qty</div>
+                <div class="v" id="sqS">0.00</div>
+              </div>
+            </div>
+            <div class="final">
+              <div>VWAP = Σ(price·qty) / Σ(qty)</div>
+              <div style="margin-top: 4px">= <b id="vwapS">—</b></div>
+            </div>
+            <div class="stats">
+              <div>iter: <b id="itS">0</b></div>
+              <div>scalar muls: <b id="mulS">0</b></div>
+              <div>scalar adds: <b id="addS">0</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== AVX2 ===================== -->
+      <section class="card" id="avxCard">
+        <h2>
+          <span class="dot" style="background: var(--lane-2)"></span>
+          <code style="background:transparent;border:none;padding:0;color:var(--text-strong);font-size:1rem">get_vwap_avx2</code>
+          &nbsp;<span class="tag">SIMD · 4 elements / iter</span>
+        </h2>
+        <div class="sub">
+          One iteration loads 4 contiguous <code>double</code>s into a 256-bit
+          <code>__m256d</code> register, does a single vector multiply, and one
+          vector add into a parallel accumulator.
+        </div>
+
+        <div class="stage">
+          <div class="zone mem">
+            <h3>Memory (RAM / L1 cache) <span class="chip">4 contiguous doubles @ once</span></h3>
+            <div class="mem-row">
+              <div class="name">prices[] @ 0x1000</div>
+              <div class="mem-cells" id="memPricesA"></div>
+            </div>
+            <div class="mem-row">
+              <div class="name">quantities[] @ 0x2000</div>
+              <div class="mem-cells" id="memQtysA"></div>
+            </div>
+            <div class="addr">
+              _mm256_loadu_pd(&prices[<span id="idxA">0</span>]) — pulls
+              <b>32 bytes</b> in a single load
+            </div>
+
+            <div class="flow">
+              <svg viewBox="0 0 400 44" preserveAspectRatio="none">
+                <path id="arrA" class="arrow" d="M 80 4 L 80 40 L 320 40 L 320 4" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="zone reg">
+            <h3>CPU vector registers (ymm) <span class="chip">__m256d · 4 × double</span></h3>
+
+            <div class="reg-row">
+              <div class="reg-label"><b>ymm0</b> price_simd</div>
+              <div class="lane l0" id="p0">—</div>
+              <div class="lane l1" id="p1">—</div>
+              <div class="lane l2" id="p2">—</div>
+              <div class="lane l3" id="p3">—</div>
+            </div>
+            <div class="reg-row">
+              <div class="reg-label"><b>ymm1</b> qty_simd</div>
+              <div class="lane l0" id="q0">—</div>
+              <div class="lane l1" id="q1">—</div>
+              <div class="lane l2" id="q2">—</div>
+              <div class="lane l3" id="q3">—</div>
+            </div>
+
+            <div class="op-line" id="opMulA">
+              ymm2 = _mm256_mul_pd(ymm0, ymm1) &nbsp;&nbsp; // 4 multiplies in parallel
+            </div>
+            <div class="reg-row">
+              <div class="reg-label"><b>ymm2</b> product</div>
+              <div class="lane l0" id="m0">—</div>
+              <div class="lane l1" id="m1">—</div>
+              <div class="lane l2" id="m2">—</div>
+              <div class="lane l3" id="m3">—</div>
+            </div>
+
+            <div class="op-line" id="opAddA">
+              ymm3 = _mm256_add_pd(ymm3, ymm2) &nbsp;&nbsp; // lane-wise accumulate
+            </div>
+            <div class="reg-row">
+              <div class="reg-label"><b>ymm3</b> Σ weighted</div>
+              <div class="lane l0" id="wl0">0</div>
+              <div class="lane l1" id="wl1">0</div>
+              <div class="lane l2" id="wl2">0</div>
+              <div class="lane l3" id="wl3">0</div>
+            </div>
+            <div class="reg-row">
+              <div class="reg-label"><b>ymm4</b> Σ qty</div>
+              <div class="lane l0" id="ql0">0</div>
+              <div class="lane l1" id="ql1">0</div>
+              <div class="lane l2" id="ql2">0</div>
+              <div class="lane l3" id="ql3">0</div>
+            </div>
+
+            <div class="op-line" id="opRedA">
+              after loop: horizontal sum — fold 4 lanes into 1 scalar
+            </div>
+            <div class="result-grid">
+              <div class="acc">
+                <div class="k">scalar Σ weighted</div>
+                <div class="v" id="swA">0.00</div>
+              </div>
+              <div class="acc">
+                <div class="k">scalar Σ qty</div>
+                <div class="v" id="sqA">0.00</div>
+              </div>
+            </div>
+            <div class="final">
+              <div>VWAP = sum_weighted / sum_qty</div>
+              <div style="margin-top: 4px">= <b id="vwapA">—</b></div>
+            </div>
+            <div class="stats">
+              <div>iter: <b id="itA">0</b></div>
+              <div>vector muls: <b id="mulA">0</b></div>
+              <div>vector adds: <b id="addA">0</b></div>
+              <div>bytes loaded: <b id="bytesA">0</b></div>
+            </div>
+            <div class="legend">
+              <span><span class="sw" style="background: var(--lane-0)"></span>lane 0</span>
+              <span><span class="sw" style="background: var(--lane-1)"></span>lane 1</span>
+              <span><span class="sw" style="background: var(--lane-2)"></span>lane 2</span>
+              <span><span class="sw" style="background: var(--lane-3)"></span>lane 3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        Single-file demo — memory, registers, compute, and reduction stages are
+        all rendered in pure HTML/CSS/JS.
+      </footer>
+    </div>
+
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+
+        let DEPTH = 12;
+        let prices = [];
+        let quantities = [];
+
+        // scalar state machine
+        // phase: 'load' → 'mul' → 'add' → next
+        let sState = { i: 0, phase: "load", w: 0, q: 0, mul: 0, add: 0, p: 0, qv: 0, prod: 0 };
+        // avx state machine
+        // phase: 'load' → 'mul' → 'add' → next ... after all done: 'reduce' → 'div' → 'done'
+        let aState = {
+          i: 0,
+          phase: "load",
+          w: [0, 0, 0, 0],
+          q: [0, 0, 0, 0],
+          prod: [0, 0, 0, 0],
+          pIn: [0, 0, 0, 0],
+          qIn: [0, 0, 0, 0],
+          mul: 0,
+          add: 0,
+          bytes: 0,
+          swScalar: 0,
+          sqScalar: 0,
+          finalV: null,
+        };
+
+        let playing = false;
+        let timer = null;
+
+        function rand(min, max) {
+          return min + Math.random() * (max - min);
+        }
+
+        function genData() {
+          prices = [];
+          quantities = [];
+          for (let i = 0; i < DEPTH; i++) {
+            prices.push(+rand(98, 102).toFixed(2));
+            quantities.push(+rand(10, 200).toFixed(0));
+          }
+        }
+
+        function renderMemStrip(elId, arr, kind, tag) {
+          const el = $(elId);
+          el.style.setProperty("--cols", DEPTH);
+          let html = "";
+          for (let i = 0; i < DEPTH; i++) {
+            const v = kind === "price" ? arr[i].toFixed(2) : arr[i];
+            html += `<div class="mc ${kind === "qty" ? "qty" : ""}" data-tag="${tag}" data-role="${kind}" data-i="${i}"><span class="idx">${i}</span>${v}</div>`;
+          }
+          el.innerHTML = html;
+        }
+
+        function renderMem() {
+          renderMemStrip("memPricesS", prices, "price", "scalar");
+          renderMemStrip("memQtysS", quantities, "qty", "scalar");
+          renderMemStrip("memPricesA", prices, "price", "avx");
+          renderMemStrip("memQtysA", quantities, "qty", "avx");
+        }
+
+        function clearMem(tag) {
+          document
+            .querySelectorAll(`[data-tag="${tag}"]`)
+            .forEach((c) =>
+              c.classList.remove("scalar-hot", "l0", "l1", "l2", "l3"),
+            );
+        }
+        function markDone(tag, upto) {
+          document
+            .querySelectorAll(`[data-tag="${tag}"]`)
+            .forEach((c) => {
+              const i = +c.dataset.i;
+              if (i < upto) c.classList.add("done");
+              else c.classList.remove("done");
+            });
+        }
+
+        function fmt(x, d = 2) {
+          if (!isFinite(x)) return "—";
+          return x.toLocaleString(undefined, {
+            minimumFractionDigits: d,
+            maximumFractionDigits: d,
+          });
+        }
+
+        function pulseEl(el) {
+          el.classList.remove("pulse", "flash");
+          void el.offsetWidth;
+          el.classList.add("pulse");
+        }
+        function flashEl(el) {
+          el.classList.remove("pulse", "flash");
+          void el.offsetWidth;
+          el.classList.add("flash");
+        }
+
+        // --------- PHASE BANNER ---------
+        function setPhase(name, text) {
+          $("phaseText").textContent = text;
+          document.querySelectorAll(".phases .p").forEach((p) => {
+            p.classList.toggle("active", p.dataset.p === name);
+          });
+        }
+
+        // --------- SCALAR STEP ---------
+        function stepScalar() {
+          if (sState.i >= DEPTH && sState.phase === "done") return false;
+
+          if (sState.phase === "load") {
+            clearMem("scalar");
+            const i = sState.i;
+            if (i >= DEPTH) {
+              // final divide
+              const v = sState.q === 0 ? 0 : sState.w / sState.q;
+              $("vwapS").textContent = fmt(v, 4);
+              setPhase("div", `get_vwap: divide — VWAP = ${fmt(v, 4)}`);
+              sState.phase = "done";
+              markDone("scalar", DEPTH);
+              return false;
+            }
+            // activate cells
+            document
+              .querySelectorAll(`[data-tag="scalar"][data-i="${i}"]`)
+              .forEach((c) => c.classList.add("scalar-hot"));
+            markDone("scalar", i);
+
+            sState.p = prices[i];
+            sState.qv = quantities[i];
+            $("regPS").textContent = sState.p.toFixed(2);
+            $("regQS").textContent = String(sState.qv);
+            pulseEl($("regPS"));
+            pulseEl($("regQS"));
+            $("idxS").textContent = i;
+            $("idxS2").textContent = i;
+            $("arrS1").classList.add("active");
+            $("arrS2").classList.add("active");
+            setPhase("load", `get_vwap: load prices[${i}] and quantities[${i}] → xmm0, xmm1`);
+            sState.phase = "mul";
+            return true;
+          }
+
+          if (sState.phase === "mul") {
+            $("arrS1").classList.remove("active");
+            $("arrS2").classList.remove("active");
+            sState.prod = sState.p * sState.qv;
+            sState.mul += 1;
+            $("opS").classList.add("active");
+            $("opS").textContent = `mulsd xmm0, xmm1   // ${sState.p.toFixed(2)} × ${sState.qv} = ${fmt(sState.prod)}`;
+            setPhase("mul", `get_vwap: scalar multiply price × qty`);
+            sState.phase = "add";
+            return true;
+          }
+
+          if (sState.phase === "add") {
+            sState.w += sState.prod;
+            sState.q += sState.qv;
+            sState.add += 2;
+            $("opS").classList.remove("active");
+            $("opS").textContent = `addsd xmm2, xmm0   // sum_weighted += product`;
+            $("regWS").textContent = fmt(sState.w);
+            $("regSQS").textContent = fmt(sState.q);
+            flashEl($("regWS"));
+            flashEl($("regSQS"));
+            $("swS").textContent = fmt(sState.w);
+            $("sqS").textContent = fmt(sState.q);
+
+            sState.i += 1;
+            $("itS").textContent = sState.i;
+            $("mulS").textContent = sState.mul;
+            $("addS").textContent = sState.add;
+            setPhase("add", `get_vwap: accumulate into sum_weighted and sum_qty`);
+            sState.phase = "load";
+            return true;
+          }
+          return false;
+        }
+
+        // --------- AVX STEP ---------
+        function stepAvx() {
+          if (aState.phase === "done") return false;
+
+          if (aState.phase === "load") {
+            clearMem("avx");
+            const base = aState.i;
+            if (base >= DEPTH) {
+              aState.phase = "reduce";
+              return true;
+            }
+            // highlight 4 lanes in memory
+            for (let k = 0; k < 4; k++) {
+              const i = base + k;
+              if (i >= DEPTH) break;
+              document
+                .querySelectorAll(`[data-tag="avx"][data-i="${i}"]`)
+                .forEach((c) => c.classList.add("l" + k));
+            }
+            markDone("avx", base);
+
+            // load into registers
+            for (let k = 0; k < 4; k++) {
+              const i = base + k;
+              const inBounds = i < DEPTH;
+              aState.pIn[k] = inBounds ? prices[i] : 0;
+              aState.qIn[k] = inBounds ? quantities[i] : 0;
+              $("p" + k).textContent = inBounds ? prices[i].toFixed(2) : "0";
+              $("q" + k).textContent = inBounds ? String(quantities[i]) : "0";
+              pulseEl($("p" + k));
+              pulseEl($("q" + k));
+            }
+            aState.bytes += 64; // 32 bytes prices + 32 bytes qtys
+            $("bytesA").textContent = aState.bytes;
+            $("idxA").textContent = base;
+            $("arrA").classList.add("active");
+            setPhase("load", `get_vwap_avx2: vmovupd ymm0,[&prices[${base}]]  ·  vmovupd ymm1,[&quantities[${base}]]`);
+            aState.phase = "mul";
+            return true;
+          }
+
+          if (aState.phase === "mul") {
+            $("arrA").classList.remove("active");
+            for (let k = 0; k < 4; k++) {
+              aState.prod[k] = aState.pIn[k] * aState.qIn[k];
+              $("m" + k).textContent = fmt(aState.prod[k]);
+              pulseEl($("m" + k));
+            }
+            aState.mul += 1;
+            $("opMulA").classList.add("active");
+            setPhase("mul", `get_vwap_avx2: vmulpd ymm2, ymm0, ymm1 — 4 multiplies in 1 cycle`);
+            aState.phase = "add";
+            return true;
+          }
+
+          if (aState.phase === "add") {
+            $("opMulA").classList.remove("active");
+            $("opAddA").classList.add("active");
+            for (let k = 0; k < 4; k++) {
+              aState.w[k] += aState.prod[k];
+              aState.q[k] += aState.qIn[k];
+              $("wl" + k).textContent = fmt(aState.w[k]);
+              $("ql" + k).textContent = fmt(aState.q[k]);
+              flashEl($("wl" + k));
+              flashEl($("ql" + k));
+            }
+            aState.add += 2;
+            aState.i += 4;
+            $("itA").textContent = Math.min(aState.i, DEPTH);
+            $("mulA").textContent = aState.mul;
+            $("addA").textContent = aState.add;
+            setPhase("add", `get_vwap_avx2: vaddpd — lane-wise accumulate into ymm3, ymm4`);
+            aState.phase = "load";
+            return true;
+          }
+
+          if (aState.phase === "reduce") {
+            $("opAddA").classList.remove("active");
+            $("opRedA").classList.add("active");
+            aState.swScalar = aState.w.reduce((a, b) => a + b, 0);
+            aState.sqScalar = aState.q.reduce((a, b) => a + b, 0);
+            $("swA").textContent = fmt(aState.swScalar);
+            $("sqA").textContent = fmt(aState.sqScalar);
+            // pulse lanes to visualize the fold
+            for (let k = 0; k < 4; k++) {
+              flashEl($("wl" + k));
+              flashEl($("ql" + k));
+            }
+            setPhase("reduce", `get_vwap_avx2: horizontal sum — fold 4 lanes → scalar (w0+w1+w2+w3, q0+q1+q2+q3)`);
+            aState.phase = "div";
+            return true;
+          }
+
+          if (aState.phase === "div") {
+            $("opRedA").classList.remove("active");
+            const v = aState.sqScalar === 0 ? 0 : aState.swScalar / aState.sqScalar;
+            aState.finalV = v;
+            $("vwapA").textContent = fmt(v, 4);
+            setPhase("div", `get_vwap_avx2: divide — VWAP = ${fmt(v, 4)}`);
+            markDone("avx", DEPTH);
+            aState.phase = "done";
+            return false;
+          }
+
+          return false;
+        }
+
+        function stepAll() {
+          const a = stepScalar();
+          const b = stepAvx();
+          return a || b;
+        }
+
+        function play() {
+          if (playing) {
+            pause();
+            return;
+          }
+          playing = true;
+          $("playBtn").textContent = "⏸ Pause";
+          const tick = () => {
+            const more = stepAll();
+            const speed = +$("speed").value;
+            const interval = 1250 - speed * 110; // 1140 .. 150 ms
+            if (!more) {
+              pause();
+              return;
+            }
+            timer = setTimeout(tick, interval);
+          };
+          tick();
+        }
+
+        function pause() {
+          playing = false;
+          $("playBtn").textContent = "▶ Play";
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        }
+
+        function resetState() {
+          sState = { i: 0, phase: "load", w: 0, q: 0, mul: 0, add: 0, p: 0, qv: 0, prod: 0 };
+          aState = {
+            i: 0,
+            phase: "load",
+            w: [0, 0, 0, 0],
+            q: [0, 0, 0, 0],
+            prod: [0, 0, 0, 0],
+            pIn: [0, 0, 0, 0],
+            qIn: [0, 0, 0, 0],
+            mul: 0,
+            add: 0,
+            bytes: 0,
+            swScalar: 0,
+            sqScalar: 0,
+            finalV: null,
+          };
+          clearMem("scalar");
+          clearMem("avx");
+          document
+            .querySelectorAll(".mc")
+            .forEach((c) => c.classList.remove("done"));
+
+          // scalar UI reset
+          $("regPS").textContent = "—";
+          $("regQS").textContent = "—";
+          $("regWS").textContent = "0.00";
+          $("regSQS").textContent = "0.00";
+          $("swS").textContent = "0.00";
+          $("sqS").textContent = "0.00";
+          $("itS").textContent = "0";
+          $("mulS").textContent = "0";
+          $("addS").textContent = "0";
+          $("vwapS").textContent = "—";
+          $("idxS").textContent = "0";
+          $("idxS2").textContent = "0";
+          $("opS").textContent = "mulsd xmm0, xmm1   // price * qty";
+          $("opS").classList.remove("active");
+          $("arrS1").classList.remove("active");
+          $("arrS2").classList.remove("active");
+
+          // avx UI reset
+          for (let k = 0; k < 4; k++) {
+            $("p" + k).textContent = "—";
+            $("q" + k).textContent = "—";
+            $("m" + k).textContent = "—";
+            $("wl" + k).textContent = "0";
+            $("ql" + k).textContent = "0";
+          }
+          $("swA").textContent = "0.00";
+          $("sqA").textContent = "0.00";
+          $("itA").textContent = "0";
+          $("mulA").textContent = "0";
+          $("addA").textContent = "0";
+          $("bytesA").textContent = "0";
+          $("vwapA").textContent = "—";
+          $("idxA").textContent = "0";
+          $("arrA").classList.remove("active");
+          $("opMulA").classList.remove("active");
+          $("opAddA").classList.remove("active");
+          $("opRedA").classList.remove("active");
+
+          setPhase("", "idle — press Play");
+        }
+
+        function fullReset() {
+          pause();
+          resetState();
+        }
+
+        function regen() {
+          pause();
+          genData();
+          renderMem();
+          resetState();
+        }
+
+        $("playBtn").addEventListener("click", play);
+        $("stepBtn").addEventListener("click", () => {
+          pause();
+          stepAll();
+        });
+        $("resetBtn").addEventListener("click", fullReset);
+        $("regenBtn").addEventListener("click", regen);
+        $("depth").addEventListener("input", (e) => {
+          DEPTH = +e.target.value;
+          $("depthVal").textContent = DEPTH;
+          regen();
+        });
+
+        genData();
+        renderMem();
+        resetState();
+      })();
+    </script>
+  </body>
+</html>

@@ -18,3 +18,13 @@ PRIVATE
     -fopt-info-vec-optimized
     -fopt-info-vec-missed
 )
+
+add_custom_target(simd_01.asm
+    COMMAND ${CMAKE_CXX_COMPILER}
+        -S -masm=intel -fverbose-asm
+        -O3 -std=c++23 -mavx2 -DNDEBUG
+        -I ${CMAKE_CURRENT_SOURCE_DIR}
+        -o ${CMAKE_CURRENT_BINARY_DIR}/simd.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/simd.cpp
+    COMMENT "Generating Intel assembly for simd_01"
+)

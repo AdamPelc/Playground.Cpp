@@ -67,7 +67,7 @@ static void BM_avx2(benchmark::State& state) {
     }
 }
 
-BENCHMARK(BM_scalar)->Range(4, 512)->MinWarmUpTime(1.0);
-BENCHMARK(BM_scalar_optimized_1)->Range(4, 512)->MinWarmUpTime(1.0);
-BENCHMARK(BM_scalar_unrolled)->Range(4, 512)->MinWarmUpTime(1.0);
-BENCHMARK(BM_avx2)->Range(4, 512)->MinWarmUpTime(1.0);
+BENCHMARK(BM_scalar)->Arg(262144)->MinWarmUpTime(1.0);
+BENCHMARK(BM_scalar_optimized_1)->Arg(262144)->MinWarmUpTime(1.0);
+BENCHMARK(BM_scalar_unrolled)->Arg(262144)->MinWarmUpTime(1.0);
+BENCHMARK(BM_avx2)->Arg(262144)->MinWarmUpTime(1.0);
