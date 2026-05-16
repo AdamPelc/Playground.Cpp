@@ -7,7 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This project uses CMake presets with Ninja and vcpkg for dependency management. `$VCPKG_ROOT` must be set.
 
 ```bash
-# Configure (choose a preset: release, debug, rel_with_deb_info, asan_ubsan, tsan)
+# Configure (choose a preset: release_gcc, release_clang, debug_gcc, debug_clang,
+#            rel_with_deb_info_gcc, rel_with_deb_info_clang,
+#            asan_ubsan_gcc, asan_ubsan_clang, tsan_gcc, tsan_clang)
 cmake --preset <preset>
 
 # Build
@@ -43,5 +45,5 @@ Dependencies (fmt, GTest, Google Benchmark) are managed via vcpkg (`vcpkg.json` 
 
 ## Sanitizer Presets
 
-- `asan_ubsan` — AddressSanitizer + UndefinedBehaviorSanitizer
-- `tsan` — ThreadSanitizer (Linux only, mutually exclusive with ASAN)
+- `asan_ubsan_gcc` / `asan_ubsan_clang` — AddressSanitizer + UndefinedBehaviorSanitizer
+- `tsan_gcc` / `tsan_clang` — ThreadSanitizer (Linux only, mutually exclusive with ASAN)

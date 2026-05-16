@@ -5,9 +5,12 @@ PRIVATE
 )
 target_link_libraries(simd_01.benchmark
 PRIVATE
-    simd_01
     compiler_warnings
     cpp_ver_23
     benchmark::benchmark
     benchmark::benchmark_main
+    simd_01.lib.01_no_vector
+    simd_01.lib.02_vector_no_fast_math
+    simd_01.lib.03_vector_fast_math
+    simd_01.lib.04_manual_simd
 )

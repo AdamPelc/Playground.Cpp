@@ -1,11 +1,18 @@
 add_executable(simd_01.test)
 target_sources(simd_01.test
 PRIVATE
-    simd.test.cpp
+    01_no_vector.test.cpp
+    02_vector_no_fast_math.test.cpp
+    03_vector_fast_math.test.cpp
+    04_manual_simd.test.cpp
 )
 target_link_libraries(simd_01.test
 PRIVATE
-    simd_01
+    simd_01.lib.01_no_vector
+    simd_01.lib.02_vector_no_fast_math
+    simd_01.lib.03_vector_fast_math
+    simd_01.lib.04_manual_simd
+    compiler_warnings
     cpp_ver_23
     GTest::gtest
     GTest::gtest_main

@@ -16,31 +16,59 @@
       }
     },
     {
-      "name": "release",
-      "inherits": [
-        "default"
-      ],
-      "displayName": "Release configuration",
+      "name": "default_gcc",
+      "hidden": true,
+      "inherits": ["default"],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "default_clang",
+      "hidden": true,
+      "inherits": ["default"],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "release_gcc",
+      "inherits": ["default_gcc"],
+      "displayName": "Release (GCC)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "rel_with_deb_info",
-      "inherits": [
-        "default"
-      ],
-      "displayName": "Optimized configuration with debug symbols",
+      "name": "release_clang",
+      "inherits": ["default_clang"],
+      "displayName": "Release (Clang)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "rel_with_deb_info_gcc",
+      "inherits": ["default_gcc"],
+      "displayName": "Optimized with debug symbols (GCC)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
-      "name": "asan_ubsan",
-      "inherits": [
-        "default"
-      ],
-      "displayName": "ASAN and UBSAN sanitizer configuration optimized (-O2)",
+      "name": "rel_with_deb_info_clang",
+      "inherits": ["default_clang"],
+      "displayName": "Optimized with debug symbols (Clang)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "asan_ubsan_gcc",
+      "inherits": ["default_gcc"],
+      "displayName": "ASAN + UBSAN (GCC)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "ASAN_ENABLED": true,
@@ -48,22 +76,45 @@
       }
     },
     {
-      "name": "tsan",
-      "inherits": [
-        "default"
-      ],
-      "displayName": "TSAN optimized (-O2)",
+      "name": "asan_ubsan_clang",
+      "inherits": ["default_clang"],
+      "displayName": "ASAN + UBSAN (Clang)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ASAN_ENABLED": true,
+        "UBSAN_ENABLED": true
+      }
+    },
+    {
+      "name": "tsan_gcc",
+      "inherits": ["default_gcc"],
+      "displayName": "TSAN (GCC)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "TSAN_ENABLED": true
       }
     },
     {
-      "name": "debug",
-      "inherits": [
-        "default"
-      ],
-      "displayName": "Debug configuration without optimizations",
+      "name": "tsan_clang",
+      "inherits": ["default_clang"],
+      "displayName": "TSAN (Clang)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TSAN_ENABLED": true
+      }
+    },
+    {
+      "name": "debug_gcc",
+      "inherits": ["default_gcc"],
+      "displayName": "Debug (GCC)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "debug_clang",
+      "inherits": ["default_clang"],
+      "displayName": "Debug (Clang)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -71,31 +122,66 @@
   ],
   "buildPresets": [
     {
-      "name": "release",
-      "displayName": "Release build",
-      "configurePreset": "release"
+      "name": "release_gcc",
+      "displayName": "Release (GCC)",
+      "configurePreset": "release_gcc"
     },
     {
-      "name": "asan_ubsan",
-      "displayName": "ASAN and TSAN build",
-      "configurePreset": "asan_ubsan"
+      "name": "release_clang",
+      "displayName": "Release (Clang)",
+      "configurePreset": "release_clang"
     },
     {
-      "name": "tsan",
-      "displayName": "TSAN build",
-      "configurePreset": "tsan"
+      "name": "rel_with_deb_info_gcc",
+      "displayName": "Optimized with debug symbols (GCC)",
+      "configurePreset": "rel_with_deb_info_gcc"
     },
     {
-      "name": "debug",
-      "displayName": "debug build",
-      "configurePreset": "debug"
+      "name": "rel_with_deb_info_clang",
+      "displayName": "Optimized with debug symbols (Clang)",
+      "configurePreset": "rel_with_deb_info_clang"
+    },
+    {
+      "name": "asan_ubsan_gcc",
+      "displayName": "ASAN + UBSAN (GCC)",
+      "configurePreset": "asan_ubsan_gcc"
+    },
+    {
+      "name": "asan_ubsan_clang",
+      "displayName": "ASAN + UBSAN (Clang)",
+      "configurePreset": "asan_ubsan_clang"
+    },
+    {
+      "name": "tsan_gcc",
+      "displayName": "TSAN (GCC)",
+      "configurePreset": "tsan_gcc"
+    },
+    {
+      "name": "tsan_clang",
+      "displayName": "TSAN (Clang)",
+      "configurePreset": "tsan_clang"
+    },
+    {
+      "name": "debug_gcc",
+      "displayName": "Debug (GCC)",
+      "configurePreset": "debug_gcc"
+    },
+    {
+      "name": "debug_clang",
+      "displayName": "Debug (Clang)",
+      "configurePreset": "debug_clang"
     }
   ],
   "testPresets": [
     {
-      "name": "all",
-      "displayName": "Run all tests",
-      "configurePreset": "release"
+      "name": "all_gcc",
+      "displayName": "Run all tests (GCC)",
+      "configurePreset": "release_gcc"
+    },
+    {
+      "name": "all_clang",
+      "displayName": "Run all tests (Clang)",
+      "configurePreset": "release_clang"
     }
   ],
   "packagePresets": [],

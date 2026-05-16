@@ -1,23 +1,22 @@
-#include "simd.h"
+#include "01_no_vector.h"
+#include "02_vector_no_fast_math.h"
+#include "03_vector_fast_math.h"
+#include "04_manual_simd.h"
 
 #include <random>
-
-#include "benchmark/benchmark.h"
-
-using namespace simd_01;
+#include <benchmark/benchmark.h>
 
 static order_book_t generate_order_book(const std::uint32_t depth) {
     std::random_device random_device;
     std::default_random_engine random_engine(random_device());
-    std::uniform_real_distribution<std::float64_t> price_modifier_distribution(0.1, 1.0);
-    std::uniform_int_distribution<std::uint32_t> quantity_distribution(1, 100'000);
+    std::uniform_real_distribution price_modifier_distribution(0.1f, 1.f);
+    std::uniform_real_distribution quantity_distribution(1.f, 100'000.f);
 
     order_book_t order_book{
-        .m_prices = std::vector<std::float64_t>(depth),
-        .m_quantities = std::vector<std::float64_t>(depth),
-        .m_depth = depth
+        .m_prices = std::vector<float>(depth),
+        .m_quantities = std::vector<float>(depth),
     };
-    std::float64_t price = 10.0;
+    auto price = 10.0f;
     for (std::uint32_t i = 0; i < depth; ++i) {
         price += price_modifier_distribution(random_engine);
         order_book.m_prices.at(i) = price;
@@ -27,47 +26,46 @@ static order_book_t generate_order_book(const std::uint32_t depth) {
     return order_book;
 }
 
-static void BM_scalar(benchmark::State& state) {
+static void BM_01_no_vector(benchmark::State& state) {
     const auto depth = static_cast<std::uint32_t>(state.range(0));
     const auto order_book = generate_order_book(depth);
     for (auto _ : state) {
-        auto result = get_vwap(order_book);
+        auto result = calculate_vwap_no_vector(order_book);
         ::benchmark::DoNotOptimize(result);
         ::benchmark::ClobberMemory();
     }
 }
+BENCHMARK(BM_01_no_vector)->Arg(262144)->MinWarmUpTime(1.0);
 
-static void BM_scalar_optimized_1(benchmark::State& state) {
+static void BM_02_vector_no_fast_math(benchmark::State& state) {
     const auto depth = static_cast<std::uint32_t>(state.range(0));
     const auto order_book = generate_order_book(depth);
     for (auto _ : state) {
-        auto result = get_vwap_opt(order_book);
+        auto result = calculate_vwap_vector_no_fast_math(order_book);
         ::benchmark::DoNotOptimize(result);
         ::benchmark::ClobberMemory();
     }
 }
+BENCHMARK(BM_02_vector_no_fast_math)->Arg(262144)->MinWarmUpTime(1.0);
 
-static void BM_scalar_unrolled(benchmark::State& state) {
+static void BM_03_vector_fast_math(benchmark::State& state) {
     const auto depth = static_cast<std::uint32_t>(state.range(0));
     const auto order_book = generate_order_book(depth);
     for (auto _ : state) {
-        auto result = get_vwap_unrolled(order_book);
+        auto result = calculate_vwap_vector_fast_math(order_book);
         ::benchmark::DoNotOptimize(result);
         ::benchmark::ClobberMemory();
     }
 }
+BENCHMARK(BM_03_vector_fast_math)->Arg(262144)->MinWarmUpTime(1.0);
 
-static void BM_avx2(benchmark::State& state) {
+static void BM_04_manual_simd(benchmark::State& state) {
     const auto depth = static_cast<std::uint32_t>(state.range(0));
     const auto order_book = generate_order_book(depth);
     for (auto _ : state) {
-        auto result = get_vwap_avx2(order_book);
-        benchmark::DoNotOptimize(result);
-        benchmark::ClobberMemory();
+        auto result = calculate_vwap_manual_simd(order_book);
+        ::benchmark::DoNotOptimize(result);
+        ::benchmark::ClobberMemory();
     }
 }
-
-BENCHMARK(BM_scalar)->Arg(262144)->MinWarmUpTime(1.0);
-BENCHMARK(BM_scalar_optimized_1)->Arg(262144)->MinWarmUpTime(1.0);
-BENCHMARK(BM_scalar_unrolled)->Arg(262144)->MinWarmUpTime(1.0);
-BENCHMARK(BM_avx2)->Arg(262144)->MinWarmUpTime(1.0);
+BENCHMARK(BM_04_manual_simd)->Arg(262144)->MinWarmUpTime(1.0);

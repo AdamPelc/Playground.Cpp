@@ -27,10 +27,14 @@ set(GCC_WARNINGS
         -Wsuggest-override # warn if an overridden member function is not marked 'override' or 'final'
 )
 
+set(GCC_DISABLED_WARNINGS
+    -Wno-interference-size # suppress the warning for `std::hardware_destructive_interference_size`.
+)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(COMPILER_WARNINGS_CXX ${CLANG_WARNINGS})
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(COMPILER_WARNINGS_CXX ${GCC_WARNINGS})
+    set(COMPILER_WARNINGS_CXX ${GCC_WARNINGS} ${GCC_DISABLED_WARNINGS})
 else()
     message(FATAL_ERROR "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
 endif()
